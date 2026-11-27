@@ -124,6 +124,37 @@ rclone link --expire 7d cesnet:bioimage-but/<project>/file.tif   # download link
 - A `rclone link` link works for anyone who has it until it expires (max. 7 days).
 - `common/` is shared by the whole group. Anyone can read, overwrite and delete files there.
 
+## Scripts and automation
+rclone asks for the config password with every command. In a script, pass it via the
+`RCLONE_CONFIG_PASS` variable. **Never put the password directly in a script** or on the command line:
+it would stay in the file or in your history.
+
+Enter the password once at the start of your work in the terminal; it lasts until you close it:
+
+**Linux / macOS (bash, zsh):**
+```bash
+read -rs RCLONE_CONFIG_PASS && export RCLONE_CONFIG_PASS   # prompts for the password without echoing it
+./my_script.sh                                             # rclone inside no longer asks
+unset RCLONE_CONFIG_PASS                                   # forget it when done
+```
+
+**Windows (PowerShell 7):**
+```powershell
+$env:RCLONE_CONFIG_PASS = Read-Host -MaskInput "rclone config password"
+.\my_script.ps1
+Remove-Item Env:\RCLONE_CONFIG_PASS
+```
+
+**Unattended jobs** (cron, cluster jobs) where nobody can type the password: store it in a file readable
+only by you and pass it via `RCLONE_PASSWORD_COMMAND`:
+```bash
+read -rs P && printf '%s\n' "$P" > ~/.config/rclone/pass && unset P
+chmod 600 ~/.config/rclone/pass
+export RCLONE_PASSWORD_COMMAND="cat $HOME/.config/rclone/pass"   # in the job script
+```
+Anyone with access to your account then also has access to your keys. Only do this on a machine and
+account you trust.
+
 ## Contact
 
 Access, new projects and problems are handled by the storage administrator: **Jiří Chmelík, [chmelikj@vut.cz](mailto:chmelikj@vut.cz)**.

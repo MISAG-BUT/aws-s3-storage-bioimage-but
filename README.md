@@ -123,6 +123,36 @@ rclone link --expire 7d cesnet:bioimage-but/<projekt>/soubor.tif   # odkaz ke st
 - Odkaz z `rclone link` funguje pro kohokoli, kdo ho má, až do vypršení (max. 7 dní).
 - `common/` je pro všechny ve skupině. Každý tam může soubory číst, přepsat i smazat.
 
+## Skripty a automatizace
+rclone se na heslo ke konfiguraci ptá při každém příkazu. Ve skriptu mu ho předáš proměnnou
+`RCLONE_CONFIG_PASS`. **Heslo nikdy nepiš přímo do skriptu** ani na příkazovou řádku: zůstalo by
+v souboru nebo v historii.
+
+Zadej heslo jednou na začátku práce v terminálu; platí jen do jeho zavření:
+
+**Linux / macOS (bash, zsh):**
+```bash
+read -rs RCLONE_CONFIG_PASS && export RCLONE_CONFIG_PASS   # zeptá se na heslo, nevypisuje ho
+./muj_skript.sh                                            # rclone uvnitř se už neptá
+unset RCLONE_CONFIG_PASS                                   # po skončení zapomene
+```
+
+**Windows (PowerShell 7):**
+```powershell
+$env:RCLONE_CONFIG_PASS = Read-Host -MaskInput "Heslo ke konfiguraci rclone"
+.\muj_skript.ps1
+Remove-Item Env:\RCLONE_CONFIG_PASS
+```
+
+**Úlohy bez obsluhy** (cron, úlohy na clusteru), kde heslo nemá kdo zadat: ulož ho do souboru čitelného
+jen pro tebe a předej ho přes `RCLONE_PASSWORD_COMMAND`:
+```bash
+read -rs P && printf '%s\n' "$P" > ~/.config/rclone/pass && unset P
+chmod 600 ~/.config/rclone/pass
+export RCLONE_PASSWORD_COMMAND="cat $HOME/.config/rclone/pass"   # do skriptu úlohy
+```
+Kdo má přístup k tvému účtu, má tím i přístup ke klíčům. Používej to jen na stroji a účtu, kterým věříš.
+
 ## Kontakt
 
 Přístupy, nové projekty a problémy řeší správce úložiště: **Jiří Chmelík, [chmelikj@vut.cz](mailto:chmelikj@vut.cz)**.
