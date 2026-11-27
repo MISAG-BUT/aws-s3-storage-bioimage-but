@@ -127,7 +127,7 @@ aws s3 sync ./data s3://private-<user>/data --profile <user>
 
 ## Contact
 
-Access, new projects and problems are handled by the storage administrator: **TODO: add contact**.
+Access, new projects and problems are handled by the storage administrator: **Jiří Chmelík, [chmelikj@vut.cz](mailto:chmelikj@vut.cz)**.
 
 ---
 <sub>This repository is generated automatically. Send changes to the administrator rather than opening a pull request.</sub>

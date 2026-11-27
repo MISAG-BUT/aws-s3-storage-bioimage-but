@@ -127,7 +127,7 @@ aws s3 sync ./data s3://private-<uzivatel>/data --profile <uzivatel>
 
 ## Kontakt
 
-Přístupy, nové projekty a problémy řeší správce úložiště: **TODO: doplnit kontakt**.
+Přístupy, nové projekty a problémy řeší správce úložiště: **Jiří Chmelík, [chmelikj@vut.cz](mailto:chmelikj@vut.cz)**.
 
 ---
 <sub>Tento repozitář se generuje automaticky. Změny posílej správci, ne pull requestem.</sub>
