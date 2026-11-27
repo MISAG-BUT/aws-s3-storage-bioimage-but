@@ -202,19 +202,55 @@ Remove-Item Env:\RCLONE_CONFIG_PASS
 
 **Linux / macOS (bash, zsh):**
 ```bash
-read -rs RCLONE_CONFIG_PASS && export RCLONE_CONFIG_PASS   # zeptá se na heslo, nevypisuje ho
+read -rsp "Heslo ke konfiguraci rclone: " RCLONE_CONFIG_PASS && echo && export RCLONE_CONFIG_PASS
 ./muj_skript.sh                                            # rclone uvnitř se už neptá
 unset RCLONE_CONFIG_PASS                                   # po skončení zapomene
 ```
 
-**Úlohy bez obsluhy** (cron, úlohy na clusteru), kde heslo nemá kdo zadat: ulož ho do souboru čitelného
-jen pro tebe a předej ho přes `RCLONE_PASSWORD_COMMAND`:
+### Úlohy bez obsluhy
+Pro úlohy, kde heslo nemá kdo zadat (Plánovač úloh, cron, úlohy na clusteru), ulož heslo ke konfiguraci
+do souboru, který můžeš číst jen ty, a předej ho přes `RCLONE_PASSWORD_COMMAND`. Kdo má přístup k tvému
+účtu, má tím i přístup ke klíčům. Používej to jen na stroji a účtu, kterým věříš.
+
+**Windows (Plánovač úloh)**: heslo se uloží zašifrované přes Windows (DPAPI), takže ho přečteš jen ty
+na tomto počítači.
+
+1. Ulož heslo (jednou; funguje v PowerShellu 5.1 i 7):
+   ```powershell
+   Read-Host -AsSecureString "Heslo ke konfiguraci rclone" | ConvertFrom-SecureString | Set-Content "$env:APPDATA\rclone\pass.dpapi"
+   ```
+2. Vytvoř pomocný skript, který heslo pro rclone rozšifruje (jednou, celý blok najednou):
+   ```powershell
+   @'
+   Add-Type -AssemblyName System.Security
+   $h = [IO.File]::ReadAllText("$PSScriptRoot\pass.dpapi").Trim()
+   $b = [byte[]]::new($h.Length / 2)
+   for ($i = 0; $i -lt $b.Length; $i++) { $b[$i] = [Convert]::ToByte($h.Substring(2 * $i, 2), 16) }
+   [Console]::Out.Write([Text.Encoding]::Unicode.GetString([Security.Cryptography.ProtectedData]::Unprotect($b, $null, 'CurrentUser')))
+   '@ | Set-Content "$env:APPDATA\rclone\rclone-pass.ps1"
+   ```
+3. Na začátek skriptu úlohy (např. `muj_skript.ps1`) dej:
+   ```powershell
+   $env:RCLONE_PASSWORD_COMMAND = "powershell -NoProfile -ExecutionPolicy Bypass -File `"$env:APPDATA\rclone\rclone-pass.ps1`""
+   ```
+4. V Plánovači úloh vytvoř úlohu: **Program** `powershell.exe`, **argumenty**
+   `-NoProfile -ExecutionPolicy Bypass -File "C:\cesta\muj_skript.ps1"`. Úloha musí běžet **pod tvým
+   účtem** a nesmí mít zaškrtnuto „Neukládat heslo“, jinak heslo nepůjde rozšifrovat.
+
+**Linux / macOS (cron, cluster):**
 ```bash
-read -rs P && printf '%s\n' "$P" > ~/.config/rclone/pass && unset P
+read -rsp "Heslo ke konfiguraci rclone: " P && echo && printf '%s\n' "$P" > ~/.config/rclone/pass && unset P
 chmod 600 ~/.config/rclone/pass
-export RCLONE_PASSWORD_COMMAND="cat $HOME/.config/rclone/pass"   # do skriptu úlohy
 ```
-Kdo má přístup k tvému účtu, má tím i přístup ke klíčům. Používej to jen na stroji a účtu, kterým věříš.
+Do skriptu úlohy dej:
+```bash
+export RCLONE_PASSWORD_COMMAND="cat $HOME/.config/rclone/pass"
+```
+
+**Kontrola** (rclone se nesmí ptát na heslo): na Windows spusť skript úlohy ručně, na Linuxu / macOS:
+```bash
+RCLONE_PASSWORD_COMMAND="cat $HOME/.config/rclone/pass" rclone lsd cesnet:bioimage-but < /dev/null
+```
 
 ## Kontakt
 

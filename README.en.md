@@ -204,20 +204,55 @@ Remove-Item Env:\RCLONE_CONFIG_PASS
 
 **Linux / macOS (bash, zsh):**
 ```bash
-read -rs RCLONE_CONFIG_PASS && export RCLONE_CONFIG_PASS   # prompts for the password without echoing it
+read -rsp "rclone config password: " RCLONE_CONFIG_PASS && echo && export RCLONE_CONFIG_PASS
 ./my_script.sh                                             # rclone inside no longer asks
 unset RCLONE_CONFIG_PASS                                   # forget it when done
 ```
 
-**Unattended jobs** (cron, cluster jobs) where nobody can type the password: store it in a file readable
-only by you and pass it via `RCLONE_PASSWORD_COMMAND`:
+### Unattended jobs
+For jobs where nobody can type the password (Task Scheduler, cron, cluster jobs), store the config password
+in a file only you can read and pass it via `RCLONE_PASSWORD_COMMAND`. Anyone with access to your account
+then also has access to your keys. Only do this on a machine and account you trust.
+
+**Windows (Task Scheduler)**: the password is stored encrypted by Windows (DPAPI), so only you can read it
+on this computer.
+
+1. Save the password (once; works in PowerShell 5.1 and 7):
+   ```powershell
+   Read-Host -AsSecureString "rclone config password" | ConvertFrom-SecureString | Set-Content "$env:APPDATA\rclone\pass.dpapi"
+   ```
+2. Create a helper script that decrypts the password for rclone (once, paste the whole block):
+   ```powershell
+   @'
+   Add-Type -AssemblyName System.Security
+   $h = [IO.File]::ReadAllText("$PSScriptRoot\pass.dpapi").Trim()
+   $b = [byte[]]::new($h.Length / 2)
+   for ($i = 0; $i -lt $b.Length; $i++) { $b[$i] = [Convert]::ToByte($h.Substring(2 * $i, 2), 16) }
+   [Console]::Out.Write([Text.Encoding]::Unicode.GetString([Security.Cryptography.ProtectedData]::Unprotect($b, $null, 'CurrentUser')))
+   '@ | Set-Content "$env:APPDATA\rclone\rclone-pass.ps1"
+   ```
+3. Put this at the start of your job script (e.g. `my_script.ps1`):
+   ```powershell
+   $env:RCLONE_PASSWORD_COMMAND = "powershell -NoProfile -ExecutionPolicy Bypass -File `"$env:APPDATA\rclone\rclone-pass.ps1`""
+   ```
+4. In Task Scheduler, create a task: **Program** `powershell.exe`, **arguments**
+   `-NoProfile -ExecutionPolicy Bypass -File "C:\path\my_script.ps1"`. The task must run **under your
+   account** and must not have "Do not store password" checked, otherwise the password cannot be decrypted.
+
+**Linux / macOS (cron, cluster):**
 ```bash
-read -rs P && printf '%s\n' "$P" > ~/.config/rclone/pass && unset P
+read -rsp "rclone config password: " P && echo && printf '%s\n' "$P" > ~/.config/rclone/pass && unset P
 chmod 600 ~/.config/rclone/pass
-export RCLONE_PASSWORD_COMMAND="cat $HOME/.config/rclone/pass"   # in the job script
 ```
-Anyone with access to your account then also has access to your keys. Only do this on a machine and
-account you trust.
+In the job script:
+```bash
+export RCLONE_PASSWORD_COMMAND="cat $HOME/.config/rclone/pass"
+```
+
+**Check** (rclone must not ask for the password): on Windows, run the job script manually; on Linux / macOS:
+```bash
+RCLONE_PASSWORD_COMMAND="cat $HOME/.config/rclone/pass" rclone lsd cesnet:bioimage-but < /dev/null
+```
 
 ## Contact
 
