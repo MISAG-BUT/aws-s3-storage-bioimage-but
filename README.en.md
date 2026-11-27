@@ -47,8 +47,19 @@ In Gatekeeper, the group page shows the **group ID (tenant)** and your **user ID
 
 ## 4. Install rclone
 - **Windows** (PowerShell): `winget install -e --id Rclone.Rclone`, then open a new terminal
-- **Linux:** `sudo -v ; curl https://rclone.org/install.sh | sudo bash`
-  (without sudo, e.g. on a cluster: download the [binary](https://rclone.org/downloads/) to `~/.local/bin`)
+- **Linux** (with sudo):
+  ```bash
+  sudo -v ; curl https://rclone.org/install.sh | sudo bash
+  ```
+  The installation may take a few minutes (it updates the man page index). If it fails because `unzip`
+  is missing, run `sudo apt install unzip` first.
+- **Linux** (without sudo, e.g. on a server or cluster; on ARM replace `amd64` with `arm64`):
+  ```bash
+  curl -O https://downloads.rclone.org/rclone-current-linux-amd64.zip
+  python3 -m zipfile -e rclone-current-linux-amd64.zip .
+  mkdir -p ~/.local/bin && cp rclone-*-linux-amd64/rclone ~/.local/bin/ && chmod +x ~/.local/bin/rclone
+  ```
+  If the `rclone` command is not found, add `export PATH="$HOME/.local/bin:$PATH"` to your `~/.bashrc`.
 - **macOS:** `brew install rclone`
 
 Check: `rclone version`

@@ -47,8 +47,19 @@ V Gatekeeperu u skupiny najdeš **ID skupiny (tenant)** a **ID uživatele**.
 
 ## 4. Nainstaluj rclone
 - **Windows** (PowerShell): `winget install -e --id Rclone.Rclone`, pak otevři nový terminál
-- **Linux:** `sudo -v ; curl https://rclone.org/install.sh | sudo bash`
-  (bez sudo, např. na clusteru: stáhni [binárku](https://rclone.org/downloads/) do `~/.local/bin`)
+- **Linux** (se sudo):
+  ```bash
+  sudo -v ; curl https://rclone.org/install.sh | sudo bash
+  ```
+  Instalace může trvat několik minut (aktualizuje se rejstřík manuálových stránek). Pokud skončí
+  chybou kvůli chybějícímu `unzip`, spusť nejdřív `sudo apt install unzip`.
+- **Linux** (bez sudo, např. na serveru nebo clusteru; na ARM nahraď `amd64` za `arm64`):
+  ```bash
+  curl -O https://downloads.rclone.org/rclone-current-linux-amd64.zip
+  python3 -m zipfile -e rclone-current-linux-amd64.zip .
+  mkdir -p ~/.local/bin && cp rclone-*-linux-amd64/rclone ~/.local/bin/ && chmod +x ~/.local/bin/rclone
+  ```
+  Pokud příkaz `rclone` nejde najít, přidej do `~/.bashrc` řádek `export PATH="$HOME/.local/bin:$PATH"`.
 - **macOS:** `brew install rclone`
 
 Ověření: `rclone version`
