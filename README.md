@@ -1,5 +1,7 @@
 # S3 úložiště bioimage-but: návod pro členy
 
+🇨🇿 Česky · [🇬🇧 English](README.en.md)
+
 Skupinové S3 úložiště na CESNET (`https://s3.cl4.du.cesnet.cz`).
 
 **Před použitím si přečti [pravidla používání](PRAVIDLA.md).**
@@ -37,9 +39,42 @@ a přihlas se svou domovskou institucí.
 
 V Gatekeeperu je vidět i S3 endpoint a tvoje ID uživatele.
 
-## 3. Nastav AWS profil
-Potřebuješ [AWS CLI v2](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
-ve verzi **2.13 nebo novější** (`aws --version`). Příklad s profilem `bioimage`:
+## 3. Nainstaluj AWS CLI a nastav profil
+
+### Instalace AWS CLI v2
+Potřebuješ **AWS CLI v2 ve verzi 2.13 nebo novější**. Balíček `awscli` z `apt`/`pip` bývá stará
+verze 1, ta nestačí. Oficiální návod:
+[Installing the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
+
+**Windows** (PowerShell):
+```powershell
+winget install -e --id Amazon.AWSCLI
+# nebo bez winget:
+msiexec.exe /i https://awscli.amazonaws.com/AWSCLIV2.msi
+```
+Po instalaci otevři nové okno terminálu.
+
+**Linux** (x86_64; na ARM nahraď `x86_64` za `aarch64`):
+```bash
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o awscliv2.zip
+unzip awscliv2.zip
+sudo ./aws/install                     # aktualizace: sudo ./aws/install --update
+# bez sudo (např. na serveru/clusteru):
+./aws/install -i ~/.local/aws-cli -b ~/.local/bin
+```
+
+**macOS**:
+```bash
+brew install awscli
+# nebo oficiální balíček:
+curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o AWSCLIV2.pkg
+sudo installer -pkg AWSCLIV2.pkg -target /
+```
+
+Ověření: `aws --version` musí vypsat `aws-cli/2.13` nebo vyšší.
+
+### Nastavení profilu
+Příklad s profilem `bioimage` (příkazy jsou stejné na všech systémech):
 
 ```
 aws configure --profile bioimage
@@ -48,7 +83,7 @@ aws configure set endpoint_url https://s3.cl4.du.cesnet.cz --profile bioimage
 `aws configure` se zeptá na Access Key ID a Secret Access Key. Region a výstupní formát nech
 prázdné (Enter).
 
-Výsledek v `~/.aws/credentials` a `~/.aws/config`:
+Výsledek v `~/.aws/credentials` a `~/.aws/config` (na Windows `%USERPROFILE%\.aws\`):
 ```ini
 # ~/.aws/credentials
 [bioimage]
