@@ -188,36 +188,56 @@ it prints a harmless `GetBucketVersioning ... 403` error, so use `delete`.
 ## Scripts and automation
 rclone asks for the config password with every command. In a script, pass it via the
 `RCLONE_CONFIG_PASS` variable. **Never put the password directly in a script** or on the command line:
-it would stay in the file or in your history.
-
-Enter the password once at the start of your work in the terminal; it lasts until you close it:
+it would stay in the file or in your history. You enter the password once in the terminal and it lasts
+until you close it.
 
 **Windows:** first check your PowerShell version:
 ```powershell
 $PSVersionTable.PSVersion
 ```
 
-**PowerShell 7** (version 7.x):
-```powershell
-$env:RCLONE_CONFIG_PASS = Read-Host -MaskInput "rclone config password"
-.\my_script.ps1
-Remove-Item Env:\RCLONE_CONFIG_PASS
-```
-
-**PowerShell 5.1** (the default "Windows PowerShell", lacks `-MaskInput`):
-```powershell
-$s = Read-Host -AsSecureString "rclone config password"
-$env:RCLONE_CONFIG_PASS = (New-Object PSCredential "x", $s).GetNetworkCredential().Password
-.\my_script.ps1
-Remove-Item Env:\RCLONE_CONFIG_PASS
-```
+1. Enter the password (PowerShell asks for it, nothing is shown):
+   - **PowerShell 7** (version 7.x):
+     ```powershell
+     $env:RCLONE_CONFIG_PASS = Read-Host -MaskInput "rclone config password"
+     ```
+   - **PowerShell 5.1** (the default "Windows PowerShell", lacks `-MaskInput`):
+     ```powershell
+     $env:RCLONE_CONFIG_PASS = (New-Object PSCredential "x", (Read-Host -AsSecureString "rclone config password")).GetNetworkCredential().Password
+     ```
+     In PowerShell 5.1, pasting the password with Ctrl+V does not work (an empty password is stored).
+     Paste it with the **right mouse button** or type it by hand.
+2. Check: prints the length of the password (not the password itself). If it prints nothing or `0`, the
+   password was not stored; repeat step 1.
+   ```powershell
+   $env:RCLONE_CONFIG_PASS.Length
+   ```
+3. Run your script in the same terminal. rclone inside no longer asks for the password:
+   ```powershell
+   .\my_script.ps1
+   ```
+4. When done, remove the password from the terminal (or close the terminal):
+   ```powershell
+   Remove-Item Env:\RCLONE_CONFIG_PASS
+   ```
 
 **Linux / macOS (bash, zsh):**
-```bash
-read -rsp "rclone config password: " RCLONE_CONFIG_PASS && echo && export RCLONE_CONFIG_PASS
-./my_script.sh                                             # rclone inside no longer asks
-unset RCLONE_CONFIG_PASS                                   # forget it when done
-```
+1. Enter the password (nothing is shown):
+   ```bash
+   read -rsp "rclone config password: " RCLONE_CONFIG_PASS && echo && export RCLONE_CONFIG_PASS
+   ```
+2. Check: prints the length of the password (not the password itself). If it prints `0`, repeat step 1.
+   ```bash
+   echo ${#RCLONE_CONFIG_PASS}
+   ```
+3. Run your script in the same terminal. rclone inside no longer asks for the password:
+   ```bash
+   ./my_script.sh
+   ```
+4. When done, remove the password from the terminal (or close the terminal):
+   ```bash
+   unset RCLONE_CONFIG_PASS
+   ```
 
 ### Unattended jobs
 For jobs where nobody can type the password (scheduled jobs, cron, cluster jobs), store the config password
@@ -231,6 +251,7 @@ on this computer.
    ```powershell
    Read-Host -AsSecureString "rclone config password" | ConvertFrom-SecureString | Set-Content "$env:APPDATA\rclone\pass.dpapi"
    ```
+   In PowerShell 5.1, paste the password with the right mouse button or type it by hand; Ctrl+V does not work.
 2. Create a helper script that decrypts the password for rclone (once, paste the whole block):
    ```powershell
    @'

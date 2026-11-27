@@ -186,36 +186,55 @@ neškodnou chybu `GetBucketVersioning ... 403`, proto používej `delete`.
 ## Skripty a automatizace
 rclone se na heslo ke konfiguraci ptá při každém příkazu. Ve skriptu mu ho předáš proměnnou
 `RCLONE_CONFIG_PASS`. **Heslo nikdy nepiš přímo do skriptu** ani na příkazovou řádku: zůstalo by
-v souboru nebo v historii.
-
-Zadej heslo jednou na začátku práce v terminálu; platí jen do jeho zavření:
+v souboru nebo v historii. Heslo zadáš jednou v terminálu a platí jen do jeho zavření.
 
 **Windows:** nejdřív zjisti verzi PowerShellu:
 ```powershell
 $PSVersionTable.PSVersion
 ```
 
-**PowerShell 7** (verze 7.x):
-```powershell
-$env:RCLONE_CONFIG_PASS = Read-Host -MaskInput "Heslo ke konfiguraci rclone"
-.\muj_skript.ps1
-Remove-Item Env:\RCLONE_CONFIG_PASS
-```
-
-**PowerShell 5.1** (výchozí „Windows PowerShell“, nezná `-MaskInput`):
-```powershell
-$s = Read-Host -AsSecureString "Heslo ke konfiguraci rclone"
-$env:RCLONE_CONFIG_PASS = (New-Object PSCredential "x", $s).GetNetworkCredential().Password
-.\muj_skript.ps1
-Remove-Item Env:\RCLONE_CONFIG_PASS
-```
+1. Zadej heslo (PowerShell se na něj zeptá, nic se nevypisuje):
+   - **PowerShell 7** (verze 7.x):
+     ```powershell
+     $env:RCLONE_CONFIG_PASS = Read-Host -MaskInput "Heslo ke konfiguraci rclone"
+     ```
+   - **PowerShell 5.1** (výchozí „Windows PowerShell“, nezná `-MaskInput`):
+     ```powershell
+     $env:RCLONE_CONFIG_PASS = (New-Object PSCredential "x", (Read-Host -AsSecureString "Heslo ke konfiguraci rclone")).GetNetworkCredential().Password
+     ```
+     V PowerShellu 5.1 nefunguje vložení hesla přes Ctrl+V (uloží se prázdné heslo). Vlož ho
+     **pravým tlačítkem myši** nebo ho napiš ručně.
+2. Kontrola: vypíše délku hesla (ne heslo samotné). Pokud nevypíše nic nebo `0`, heslo se neuložilo;
+   opakuj krok 1.
+   ```powershell
+   $env:RCLONE_CONFIG_PASS.Length
+   ```
+3. Spusť skript ve stejném terminálu. rclone uvnitř se už na heslo neptá:
+   ```powershell
+   .\muj_skript.ps1
+   ```
+4. Po skončení práce heslo z terminálu odstraň (nebo terminál zavři):
+   ```powershell
+   Remove-Item Env:\RCLONE_CONFIG_PASS
+   ```
 
 **Linux / macOS (bash, zsh):**
-```bash
-read -rsp "Heslo ke konfiguraci rclone: " RCLONE_CONFIG_PASS && echo && export RCLONE_CONFIG_PASS
-./muj_skript.sh                                            # rclone uvnitř se už neptá
-unset RCLONE_CONFIG_PASS                                   # po skončení zapomene
-```
+1. Zadej heslo (nic se nevypisuje):
+   ```bash
+   read -rsp "Heslo ke konfiguraci rclone: " RCLONE_CONFIG_PASS && echo && export RCLONE_CONFIG_PASS
+   ```
+2. Kontrola: vypíše délku hesla (ne heslo samotné). Pokud vypíše `0`, opakuj krok 1.
+   ```bash
+   echo ${#RCLONE_CONFIG_PASS}
+   ```
+3. Spusť skript ve stejném terminálu. rclone uvnitř se už na heslo neptá:
+   ```bash
+   ./muj_skript.sh
+   ```
+4. Po skončení práce heslo z terminálu odstraň (nebo terminál zavři):
+   ```bash
+   unset RCLONE_CONFIG_PASS
+   ```
 
 ### Úlohy bez obsluhy
 Pro úlohy, kde heslo nemá kdo zadat (naplánované úlohy, cron, úlohy na clusteru), ulož heslo ke konfiguraci
@@ -229,6 +248,7 @@ na tomto počítači.
    ```powershell
    Read-Host -AsSecureString "Heslo ke konfiguraci rclone" | ConvertFrom-SecureString | Set-Content "$env:APPDATA\rclone\pass.dpapi"
    ```
+   V PowerShellu 5.1 vlož heslo pravým tlačítkem myši nebo ho napiš ručně, Ctrl+V nefunguje.
 2. Vytvoř pomocný skript, který heslo pro rclone rozšifruje (jednou, celý blok najednou):
    ```powershell
    @'
