@@ -180,30 +180,31 @@ v souboru nebo v historii.
 
 Zadej heslo jednou na začátku práce v terminálu; platí jen do jeho zavření:
 
-**Linux / macOS (bash, zsh):**
-```bash
-read -rs RCLONE_CONFIG_PASS && export RCLONE_CONFIG_PASS   # zeptá se na heslo, nevypisuje ho
-./muj_skript.sh                                            # rclone uvnitř se už neptá
-unset RCLONE_CONFIG_PASS                                   # po skončení zapomene
+**Windows:** nejdřív zjisti verzi PowerShellu:
+```powershell
+$PSVersionTable.PSVersion
 ```
 
-**Windows (PowerShell 7):**
+**PowerShell 7** (verze 7.x):
 ```powershell
 $env:RCLONE_CONFIG_PASS = Read-Host -MaskInput "Heslo ke konfiguraci rclone"
 .\muj_skript.ps1
 Remove-Item Env:\RCLONE_CONFIG_PASS
 ```
 
-**Windows (PowerShell 5.1)**, výchozí „Windows PowerShell“, který nezná `-MaskInput`:
+**PowerShell 5.1** (výchozí „Windows PowerShell“, nezná `-MaskInput`):
 ```powershell
 $s = Read-Host -AsSecureString "Heslo ke konfiguraci rclone"
 $env:RCLONE_CONFIG_PASS = (New-Object PSCredential "x", $s).GetNetworkCredential().Password
 .\muj_skript.ps1
 Remove-Item Env:\RCLONE_CONFIG_PASS
 ```
-Verzi zjistíš příkazem:
-```powershell
-$PSVersionTable.PSVersion
+
+**Linux / macOS (bash, zsh):**
+```bash
+read -rs RCLONE_CONFIG_PASS && export RCLONE_CONFIG_PASS   # zeptá se na heslo, nevypisuje ho
+./muj_skript.sh                                            # rclone uvnitř se už neptá
+unset RCLONE_CONFIG_PASS                                   # po skončení zapomene
 ```
 
 **Úlohy bez obsluhy** (cron, úlohy na clusteru), kde heslo nemá kdo zadat: ulož ho do souboru čitelného

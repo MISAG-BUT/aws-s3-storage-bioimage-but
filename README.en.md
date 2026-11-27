@@ -182,30 +182,31 @@ it would stay in the file or in your history.
 
 Enter the password once at the start of your work in the terminal; it lasts until you close it:
 
-**Linux / macOS (bash, zsh):**
-```bash
-read -rs RCLONE_CONFIG_PASS && export RCLONE_CONFIG_PASS   # prompts for the password without echoing it
-./my_script.sh                                             # rclone inside no longer asks
-unset RCLONE_CONFIG_PASS                                   # forget it when done
+**Windows:** first check your PowerShell version:
+```powershell
+$PSVersionTable.PSVersion
 ```
 
-**Windows (PowerShell 7):**
+**PowerShell 7** (version 7.x):
 ```powershell
 $env:RCLONE_CONFIG_PASS = Read-Host -MaskInput "rclone config password"
 .\my_script.ps1
 Remove-Item Env:\RCLONE_CONFIG_PASS
 ```
 
-**Windows (PowerShell 5.1)**, the default "Windows PowerShell", which lacks `-MaskInput`:
+**PowerShell 5.1** (the default "Windows PowerShell", lacks `-MaskInput`):
 ```powershell
 $s = Read-Host -AsSecureString "rclone config password"
 $env:RCLONE_CONFIG_PASS = (New-Object PSCredential "x", $s).GetNetworkCredential().Password
 .\my_script.ps1
 Remove-Item Env:\RCLONE_CONFIG_PASS
 ```
-Check your version with:
-```powershell
-$PSVersionTable.PSVersion
+
+**Linux / macOS (bash, zsh):**
+```bash
+read -rs RCLONE_CONFIG_PASS && export RCLONE_CONFIG_PASS   # prompts for the password without echoing it
+./my_script.sh                                             # rclone inside no longer asks
+unset RCLONE_CONFIG_PASS                                   # forget it when done
 ```
 
 **Unattended jobs** (cron, cluster jobs) where nobody can type the password: store it in a file readable
