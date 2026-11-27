@@ -99,11 +99,7 @@ Run:
 ```
 rclone config
 ```
-and answer as follows (for choices, type the text, not the number; numbers differ between versions).
-Endpoint to copy:
-```
-https://s3.cl4.du.cesnet.cz
-```
+and answer as follows (for choices, type the text, not the number; numbers differ between versions):
 
 | Prompt | Answer |
 |---|---|

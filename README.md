@@ -99,10 +99,7 @@ Spusť:
 ```
 rclone config
 ```
-a odpovídej takto (u výběru napiš text, ne číslo; čísla se mezi verzemi liší). Endpoint ke zkopírování:
-```
-https://s3.cl4.du.cesnet.cz
-```
+a odpovídej takto (u výběru napiš text, ne číslo; čísla se mezi verzemi liší):
 
 | Otázka | Odpověď |
 |---|---|
