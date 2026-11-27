@@ -152,6 +152,8 @@ rclone link --expire 7d cesnet:bioimage-but/<project>/file.tif   # download link
 - S3 does not really have folders. A folder appears with its first file; `rclone mkdir` does nothing.
   Some tools, however, create empty "folder markers". Such a folder does not disappear after its files
   are deleted, see below.
+- A `rclone link` link works for anyone who has it until it expires (max. 7 days).
+- `common/` is shared by the whole group. Anyone can read, overwrite and delete files there.
 
 ### Deleting a non-empty folder
 First check what will be deleted, then delete:
@@ -172,8 +174,6 @@ itself.
 Delete encrypted data through the encryption
 layer (`rclone delete <project>-crypt:folder`). `rclone purge` also deletes the folder, but on our storage
 it prints a harmless `GetBucketVersioning ... 403` error, so use `delete`.
-- A `rclone link` link works for anyone who has it until it expires (max. 7 days).
-- `common/` is shared by the whole group. Anyone can read, overwrite and delete files there.
 
 ## Scripts and automation
 rclone asks for the config password with every command. In a script, pass it via the

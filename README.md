@@ -151,6 +151,8 @@ rclone link --expire 7d cesnet:bioimage-but/<projekt>/soubor.tif   # odkaz ke st
 - S3 ve skutečnosti nemá složky. Složka vznikne s prvním souborem; `rclone mkdir` nic neudělá.
   Některé nástroje ale vytvářejí prázdné „značky složek“. Taková složka po smazání souborů nezmizí,
   viz níže.
+- Odkaz z `rclone link` funguje pro kohokoli, kdo ho má, až do vypršení (max. 7 dní).
+- `common/` je pro všechny ve skupině. Každý tam může soubory číst, přepsat i smazat.
 
 ### Smazání neprázdné složky
 Nejdřív se podívej, co se smaže, a pak smaž:
@@ -170,8 +172,6 @@ Nespouštěj to na celou složku projektu (`cesnet:bioimage-but/<projekt>`), sma
 Šifrovaná data mažeš přes šifrovanou vrstvu
 (`rclone delete <projekt>-crypt:slozka`). `rclone purge` složku smaže také, ale na našem úložišti vypíše
 neškodnou chybu `GetBucketVersioning ... 403`, proto používej `delete`.
-- Odkaz z `rclone link` funguje pro kohokoli, kdo ho má, až do vypršení (max. 7 dní).
-- `common/` je pro všechny ve skupině. Každý tam může soubory číst, přepsat i smazat.
 
 ## Skripty a automatizace
 rclone se na heslo ke konfiguraci ptá při každém příkazu. Ve skriptu mu ho předáš proměnnou
