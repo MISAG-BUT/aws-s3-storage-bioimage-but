@@ -149,8 +149,9 @@ rclone link --expire 7d cesnet:bioimage-but/<project>/file.tif   # download link
 - Try `sync` and deletions with `--dry-run` first. Deleted files cannot be restored, neither on S3 nor locally.
 - `rclone ls cesnet:bioimage-but` (the whole bucket at once) fails with 403. Always specify the project.
 - `403 AccessDenied` means you do not have access to that folder.
-- S3 has no empty folders. A folder appears with its first file and disappears with its last one:
-  `rclone mkdir` does nothing and after `rclone delete` the folder disappears by itself, no `rmdir` needed.
+- S3 does not really have folders. A folder appears with its first file; `rclone mkdir` does nothing.
+  Some tools, however, create empty "folder markers". Such a folder does not disappear after its files
+  are deleted, see below.
 
 ### Deleting a non-empty folder
 First check what will be deleted, then delete:
@@ -160,7 +161,15 @@ rclone delete cesnet:bioimage-but/<project>/folder --dry-run
 ```
 rclone delete cesnet:bioimage-but/<project>/folder
 ```
-This deletes all files in the folder and its subfolders. Delete encrypted data through the encryption
+This deletes all files in the folder and its subfolders. If the folder is still visible afterwards (empty
+folder markers are left), remove them:
+```
+rclone rmdirs cesnet:bioimage-but/<project>/folder --s3-directory-markers
+```
+Do not run this on the whole project folder (`cesnet:bioimage-but/<project>`); it would delete the project
+itself.
+
+Delete encrypted data through the encryption
 layer (`rclone delete <project>-crypt:folder`). `rclone purge` also deletes the folder, but on our storage
 it prints a harmless `GetBucketVersioning ... 403` error, so use `delete`.
 - A `rclone link` link works for anyone who has it until it expires (max. 7 days).
