@@ -54,7 +54,8 @@ password; the project password is shared by all project members.
 The same commands as in the [member guide](README.en.md), just use the encryption layer instead of `cesnet:…`:
 ```
 rclone copy ./data <project>-crypt:data          # upload, encrypted
-rclone sync ./data <project>-crypt:data          # mirror; deletes on S3 what is missing locally
+rclone sync ./data <project>-crypt:data          # S3 = copy of the local folder; deletes on S3 what is not local
+rclone sync <project>-crypt:data ./data          # reverse: deletes LOCALLY what is not on S3
 rclone ls <project>-crypt:                       # listing with decrypted names
 rclone copy <project>-crypt:data ./restore       # download and decrypt
 rclone cat <project>-crypt:data/file.txt         # print a single file

@@ -134,7 +134,8 @@ rclone ls cesnet:private-<user>                  # your private bucket
 ## Working with data
 ```
 rclone copy ./data cesnet:bioimage-but/<project>/data      # upload (skips identical files)
-rclone sync ./data cesnet:bioimage-but/<project>/data      # mirror; deletes on S3 what is missing locally
+rclone sync ./data cesnet:bioimage-but/<project>/data      # S3 = copy of the local folder; deletes on S3 what is not local
+rclone sync cesnet:bioimage-but/<project>/data ./data      # reverse: local folder = copy of S3; deletes LOCALLY what is not on S3
 rclone copy cesnet:bioimage-but/<project>/data ./data      # download
 rclone check ./data cesnet:bioimage-but/<project>/data     # compare local data with S3
 rclone cat cesnet:bioimage-but/<project>/notes.txt         # print a file
@@ -142,7 +143,10 @@ rclone deletefile cesnet:bioimage-but/<project>/file.tif   # delete a file
 rclone delete cesnet:bioimage-but/<project>/old            # delete the contents of a folder
 rclone link --expire 7d cesnet:bioimage-but/<project>/file.tif   # download link for anyone
 ```
-- Try `sync` and deletions with `--dry-run` first. Deleted files cannot be restored.
+- **`rclone sync SOURCE DEST`** makes the destination an exact copy of the source: it **deletes** everything
+  in the destination that is not in the source. The order sets the direction. A `sync` from S3 to your
+  computer therefore deletes **local** files that are not on S3. If you do not want to delete, use `rclone copy`.
+- Try `sync` and deletions with `--dry-run` first. Deleted files cannot be restored, neither on S3 nor locally.
 - `rclone ls cesnet:bioimage-but` (the whole bucket at once) fails with 403. Always specify the project.
 - `403 AccessDenied` means you do not have access to that folder.
 - S3 has no empty folders. A folder appears with its first file; `rclone mkdir` does nothing.

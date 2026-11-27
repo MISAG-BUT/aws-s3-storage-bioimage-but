@@ -133,7 +133,8 @@ rclone ls cesnet:private-<uzivatel>              # tvůj soukromý bucket
 ## Práce s daty
 ```
 rclone copy ./data cesnet:bioimage-but/<projekt>/data      # nahraje (přeskočí shodné soubory)
-rclone sync ./data cesnet:bioimage-but/<projekt>/data      # zrcadlí, na S3 smaže, co lokálně chybí
+rclone sync ./data cesnet:bioimage-but/<projekt>/data      # S3 = kopie lokální složky; na S3 smaže, co lokálně není
+rclone sync cesnet:bioimage-but/<projekt>/data ./data      # opačně: lokální složka = kopie S3; LOKÁLNĚ smaže, co na S3 není
 rclone copy cesnet:bioimage-but/<projekt>/data ./data      # stáhne
 rclone check ./data cesnet:bioimage-but/<projekt>/data     # porovná lokální data s S3
 rclone cat cesnet:bioimage-but/<projekt>/poznamka.txt      # vypíše soubor
@@ -141,7 +142,10 @@ rclone deletefile cesnet:bioimage-but/<projekt>/soubor.tif # smaže soubor
 rclone delete cesnet:bioimage-but/<projekt>/stare          # smaže obsah složky
 rclone link --expire 7d cesnet:bioimage-but/<projekt>/soubor.tif   # odkaz ke stažení pro kohokoli
 ```
-- Před `sync` a mazáním si to vyzkoušej s `--dry-run`. Smazané soubory nejde obnovit.
+- **`rclone sync ZDROJ CÍL`** udělá z cíle přesnou kopii zdroje: v cíli **smaže** vše, co ve zdroji není.
+  Směr určuje pořadí. Při `sync` z S3 do počítače tak přijdeš o **lokální** soubory, které na S3 nejsou.
+  Pokud nechceš mazat, použij `rclone copy`.
+- Před `sync` a mazáním si to vyzkoušej s `--dry-run`. Smazané soubory nejde obnovit, ani na S3, ani lokálně.
 - `rclone ls cesnet:bioimage-but` (celý bucket najednou) skončí chybou 403. Vždy zadej projekt.
 - `403 AccessDenied` znamená, že do dané složky nemáš přístup.
 - S3 nemá prázdné složky. Složka vznikne až s prvním souborem, `rclone mkdir` nic neudělá.

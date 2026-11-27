@@ -51,7 +51,8 @@ heslo projektu sdílí všichni jeho členové.
 Stejné příkazy jako v [návodu pro členy](README.md), jen místo `cesnet:…` použiješ šifrovanou vrstvu:
 ```
 rclone copy ./data <projekt>-crypt:data          # nahraje zašifrovaně
-rclone sync ./data <projekt>-crypt:data          # zrcadlí, na S3 smaže, co lokálně chybí
+rclone sync ./data <projekt>-crypt:data          # S3 = kopie lokální složky; na S3 smaže, co lokálně není
+rclone sync <projekt>-crypt:data ./data          # opačně: LOKÁLNĚ smaže, co na S3 není
 rclone ls <projekt>-crypt:                       # výpis s rozšifrovanými názvy
 rclone copy <projekt>-crypt:data ./obnova        # stáhne a rozšifruje
 rclone cat <projekt>-crypt:data/soubor.txt       # vypíše jeden soubor
