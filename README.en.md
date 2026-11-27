@@ -210,11 +210,11 @@ unset RCLONE_CONFIG_PASS                                   # forget it when done
 ```
 
 ### Unattended jobs
-For jobs where nobody can type the password (Task Scheduler, cron, cluster jobs), store the config password
+For jobs where nobody can type the password (scheduled jobs, cron, cluster jobs), store the config password
 in a file only you can read and pass it via `RCLONE_PASSWORD_COMMAND`. Anyone with access to your account
 then also has access to your keys. Only do this on a machine and account you trust.
 
-**Windows (Task Scheduler)**: the password is stored encrypted by Windows (DPAPI), so only you can read it
+**Windows:** the password is stored encrypted by Windows (DPAPI), so only you can read it
 on this computer.
 
 1. Save the password (once; works in PowerShell 5.1 and 7):
@@ -231,13 +231,10 @@ on this computer.
    [Console]::Out.Write([Text.Encoding]::Unicode.GetString([Security.Cryptography.ProtectedData]::Unprotect($b, $null, 'CurrentUser')))
    '@ | Set-Content "$env:APPDATA\rclone\rclone-pass.ps1"
    ```
-3. Put this at the start of your job script (e.g. `my_script.ps1`):
+3. Put this at the start of the script that runs rclone (e.g. `my_script.ps1`):
    ```powershell
    $env:RCLONE_PASSWORD_COMMAND = "powershell -NoProfile -ExecutionPolicy Bypass -File `"$env:APPDATA\rclone\rclone-pass.ps1`""
    ```
-4. In Task Scheduler, create a task: **Program** `powershell.exe`, **arguments**
-   `-NoProfile -ExecutionPolicy Bypass -File "C:\path\my_script.ps1"`. The task must run **under your
-   account** and must not have "Do not store password" checked, otherwise the password cannot be decrypted.
 
 **Linux / macOS (cron, cluster):**
 ```bash

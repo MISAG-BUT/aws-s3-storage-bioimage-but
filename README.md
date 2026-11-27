@@ -208,11 +208,11 @@ unset RCLONE_CONFIG_PASS                                   # po skončení zapom
 ```
 
 ### Úlohy bez obsluhy
-Pro úlohy, kde heslo nemá kdo zadat (Plánovač úloh, cron, úlohy na clusteru), ulož heslo ke konfiguraci
+Pro úlohy, kde heslo nemá kdo zadat (naplánované úlohy, cron, úlohy na clusteru), ulož heslo ke konfiguraci
 do souboru, který můžeš číst jen ty, a předej ho přes `RCLONE_PASSWORD_COMMAND`. Kdo má přístup k tvému
 účtu, má tím i přístup ke klíčům. Používej to jen na stroji a účtu, kterým věříš.
 
-**Windows (Plánovač úloh)**: heslo se uloží zašifrované přes Windows (DPAPI), takže ho přečteš jen ty
+**Windows:** heslo se uloží zašifrované přes Windows (DPAPI), takže ho přečteš jen ty
 na tomto počítači.
 
 1. Ulož heslo (jednou; funguje v PowerShellu 5.1 i 7):
@@ -229,13 +229,10 @@ na tomto počítači.
    [Console]::Out.Write([Text.Encoding]::Unicode.GetString([Security.Cryptography.ProtectedData]::Unprotect($b, $null, 'CurrentUser')))
    '@ | Set-Content "$env:APPDATA\rclone\rclone-pass.ps1"
    ```
-3. Na začátek skriptu úlohy (např. `muj_skript.ps1`) dej:
+3. Na začátek skriptu, který spouští rclone (např. `muj_skript.ps1`), dej:
    ```powershell
    $env:RCLONE_PASSWORD_COMMAND = "powershell -NoProfile -ExecutionPolicy Bypass -File `"$env:APPDATA\rclone\rclone-pass.ps1`""
    ```
-4. V Plánovači úloh vytvoř úlohu: **Program** `powershell.exe`, **argumenty**
-   `-NoProfile -ExecutionPolicy Bypass -File "C:\cesta\muj_skript.ps1"`. Úloha musí běžet **pod tvým
-   účtem** a nesmí mít zaškrtnuto „Neukládat heslo“, jinak heslo nepůjde rozšifrovat.
 
 **Linux / macOS (cron, cluster):**
 ```bash
