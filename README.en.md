@@ -122,6 +122,14 @@ https://s3.cl4.du.cesnet.cz
 | `Keep this "cesnet" remote?` | `y` |
 | `e/n/d/r/c/s/q>` | `q` (quit) |
 
+Check that your keys were saved:
+```
+rclone config show cesnet
+```
+The output must contain the lines `access_key_id`, `secret_access_key` and `endpoint = https://s3.cl4.du.cesnet.cz`.
+It includes your secret key, so do not send it to anyone. If the keys are missing (you only pressed Enter at the
+key prompt), run `rclone config`, choose `e` (edit), remote `cesnet` and enter the keys again.
+
 Never send or commit the config file, not even the encrypted one.
 
 ## 7. Check your access (once the administrator confirms the setup)
@@ -149,6 +157,8 @@ rclone link --expire 7d cesnet:bioimage-but/<project>/file.tif   # download link
 - Try `sync` and deletions with `--dry-run` first. Deleted files cannot be restored, neither on S3 nor locally.
 - `rclone ls cesnet:bioimage-but` (the whole bucket at once) fails with 403. Always specify the project.
 - `403 AccessDenied` means you do not have access to that folder.
+- `directory not found` for `cesnet:bioimage-but` means the server does not know your keys: they are missing
+  from the config (check as in step 6), or they come from a different group in Gatekeeper (group ID, see step 3).
 - S3 does not really have folders. A folder appears with its first file; `rclone mkdir` does nothing.
   Some tools, however, create empty "folder markers". Such a folder does not disappear after its files
   are deleted, see below.
@@ -231,13 +241,27 @@ on this computer.
    [Console]::Out.Write([Text.Encoding]::Unicode.GetString([Security.Cryptography.ProtectedData]::Unprotect($b, $null, 'CurrentUser')))
    '@ | Set-Content "$env:APPDATA\rclone\rclone-pass.ps1"
    ```
-3. Put this at the start of the script that runs rclone (e.g. `my_script.ps1`):
+3. Set the variable: run this line in the terminal and also put it at the start of the script that runs
+   rclone (e.g. `my_script.ps1`):
    ```powershell
    $env:RCLONE_PASSWORD_COMMAND = "powershell -NoProfile -ExecutionPolicy Bypass -File `"$env:APPDATA\rclone\rclone-pass.ps1`""
    ```
-4. Check: in the terminal where you ran step 3, rclone must not ask for the password:
+4. Check: in the same terminal, rclone must not ask for the password:
    ```powershell
    $null | rclone lsd cesnet:bioimage-but
+   ```
+   The variable only applies in the terminal where you set it. Run your script there as `.\my_script.ps1`;
+   with `powershell -File my_script.ps1` or "Run with PowerShell" it runs in a new process, which has to set
+   it itself (that is why the line is also in the script). Mind the `$env:` prefix: without it rclone does not
+   see the variable. To check whether it is set, run `$env:RCLONE_PASSWORD_COMMAND`.
+5. Optional: to stop rclone asking for the password in any terminal, set the variable permanently for your
+   account (applies to newly opened terminals):
+   ```powershell
+   [Environment]::SetEnvironmentVariable("RCLONE_PASSWORD_COMMAND", "powershell -NoProfile -ExecutionPolicy Bypass -File `"$env:APPDATA\rclone\rclone-pass.ps1`"", "User")
+   ```
+   To remove it:
+   ```powershell
+   [Environment]::SetEnvironmentVariable("RCLONE_PASSWORD_COMMAND", $null, "User")
    ```
 
 **Linux / macOS (cron, cluster):**

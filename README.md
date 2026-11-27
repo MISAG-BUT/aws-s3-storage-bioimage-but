@@ -121,6 +121,14 @@ https://s3.cl4.du.cesnet.cz
 | `Keep this "cesnet" remote?` | `y` |
 | `e/n/d/r/c/s/q>` | `q` (konec) |
 
+Kontrola, že se klíče uložily:
+```
+rclone config show cesnet
+```
+Výpis musí obsahovat řádky `access_key_id`, `secret_access_key` a `endpoint = https://s3.cl4.du.cesnet.cz`.
+Obsahuje tajný klíč, nikomu ho neposílej. Pokud klíče chybí (u otázky na klíč jsi zmáčkl jen Enter),
+spusť `rclone config`, zvol `e` (edit), remote `cesnet` a klíče zadej znovu.
+
 Konfiguraci nikomu neposílej a necommituj, ani zašifrovanou.
 
 ## 7. Ověř přístup (až ti správce potvrdí nastavení)
@@ -148,6 +156,8 @@ rclone link --expire 7d cesnet:bioimage-but/<projekt>/soubor.tif   # odkaz ke st
 - Před `sync` a mazáním si to vyzkoušej s `--dry-run`. Smazané soubory nejde obnovit, ani na S3, ani lokálně.
 - `rclone ls cesnet:bioimage-but` (celý bucket najednou) skončí chybou 403. Vždy zadej projekt.
 - `403 AccessDenied` znamená, že do dané složky nemáš přístup.
+- `directory not found` u `cesnet:bioimage-but` znamená, že server tvé klíče nezná: v konfiguraci chybí
+  (zkontroluj podle kroku 6), nebo jsou z jiné skupiny v Gatekeeperu (ID skupiny viz krok 3).
 - S3 ve skutečnosti nemá složky. Složka vznikne s prvním souborem; `rclone mkdir` nic neudělá.
   Některé nástroje ale vytvářejí prázdné „značky složek“. Taková složka po smazání souborů nezmizí,
   viz níže.
@@ -229,13 +239,27 @@ na tomto počítači.
    [Console]::Out.Write([Text.Encoding]::Unicode.GetString([Security.Cryptography.ProtectedData]::Unprotect($b, $null, 'CurrentUser')))
    '@ | Set-Content "$env:APPDATA\rclone\rclone-pass.ps1"
    ```
-3. Na začátek skriptu, který spouští rclone (např. `muj_skript.ps1`), dej:
+3. Nastav proměnnou: spusť tento řádek v terminálu a dej ho i na začátek skriptu, který spouští rclone
+   (např. `muj_skript.ps1`):
    ```powershell
    $env:RCLONE_PASSWORD_COMMAND = "powershell -NoProfile -ExecutionPolicy Bypass -File `"$env:APPDATA\rclone\rclone-pass.ps1`""
    ```
-4. Kontrola: v terminálu, kde jsi spustil krok 3, se rclone nesmí ptát na heslo:
+4. Kontrola: ve stejném terminálu se rclone nesmí ptát na heslo:
    ```powershell
    $null | rclone lsd cesnet:bioimage-but
+   ```
+   Proměnná platí jen v terminálu, kde jsi ji nastavil. Skript proto spouštěj v něm jako `.\muj_skript.ps1`;
+   při `powershell -File muj_skript.ps1` nebo „Spustit v PowerShellu“ běží v novém procesu, kde ji musí
+   nastavit sám (proto je řádek i ve skriptu). Pozor na `$env:`: bez něj rclone proměnnou nevidí.
+   Zda je nastavená, zjistíš příkazem `$env:RCLONE_PASSWORD_COMMAND`.
+5. Volitelně: aby se rclone neptal na heslo v žádném terminálu, nastav proměnnou trvale pro svůj účet
+   (platí v nově otevřených terminálech):
+   ```powershell
+   [Environment]::SetEnvironmentVariable("RCLONE_PASSWORD_COMMAND", "powershell -NoProfile -ExecutionPolicy Bypass -File `"$env:APPDATA\rclone\rclone-pass.ps1`"", "User")
+   ```
+   Zrušení:
+   ```powershell
+   [Environment]::SetEnvironmentVariable("RCLONE_PASSWORD_COMMAND", $null, "User")
    ```
 
 **Linux / macOS (cron, cluster):**
