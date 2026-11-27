@@ -41,9 +41,9 @@ Pro citlivá data proto použij **šifrování na straně klienta**: soubory za�
 Ověření: `rclone version`
 
 ### 2. Připojení k S3
-Použije klíče z AWS profilu `bioimage` (viz [návod pro členy](README.md)), takže je nezadáváš znovu:
+Použije klíče z AWS profilu `<uzivatel>` (viz [návod pro členy](README.md)), takže je nezadáváš znovu:
 ```
-rclone config create cesnet s3 provider=Ceph env_auth=true profile=bioimage endpoint=https://s3.cl4.du.cesnet.cz
+rclone config create cesnet s3 provider=Ceph env_auth=true profile=<uzivatel> endpoint=https://s3.cl4.du.cesnet.cz
 ```
 Kontrola: `rclone lsd cesnet:bioimage-but` vypíše složky ve sdíleném bucketu.
 
@@ -54,7 +54,7 @@ rclone config create <projekt>-crypt crypt remote=cesnet:bioimage-but/<projekt>/
 ```
 Pro soukromá data:
 ```
-rclone config create soukrome crypt remote=cesnet:private-<jméno>/encrypted password=<heslo> --obscure
+rclone config create soukrome crypt remote=cesnet:private-<uzivatel>/encrypted password=<heslo> --obscure
 ```
 `--obscure` heslo v `rclone.conf` jen zamaskuje, nešifruje. Kdo získá tvůj `rclone.conf`, získá i heslo.
 Chraň ho stejně jako AWS klíče; volitelně ho zašifruj příkazem `rclone config encryption set`.
@@ -84,6 +84,6 @@ Připojení jako disk (`rclone mount <projekt>-crypt: X:`) potřebuje na Windows
 Instalace: `winget install -e --id FiloSottile.age` / `apt install age` / `brew install age`
 ```
 age -p -o data.tar.age data.tar                 # zašifruje heslem
-aws s3 cp data.tar.age s3://private-<jméno>/ --profile bioimage
+aws s3 cp data.tar.age s3://private-<uzivatel>/ --profile <uzivatel>
 age -d -o data.tar data.tar.age                 # rozšifruje
 ```

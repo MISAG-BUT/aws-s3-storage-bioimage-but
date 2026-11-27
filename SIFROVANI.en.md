@@ -43,10 +43,10 @@ For sensitive data, use **client-side encryption**: encrypt files before you upl
 Check: `rclone version`
 
 ### 2. Connect to S3
-This reuses the keys from your AWS profile `bioimage` (see the [member guide](README.en.md)), so you do not
+This reuses the keys from your AWS profile `<user>` (see the [member guide](README.en.md)), so you do not
 enter them again:
 ```
-rclone config create cesnet s3 provider=Ceph env_auth=true profile=bioimage endpoint=https://s3.cl4.du.cesnet.cz
+rclone config create cesnet s3 provider=Ceph env_auth=true profile=<user> endpoint=https://s3.cl4.du.cesnet.cz
 ```
 Check: `rclone lsd cesnet:bioimage-but` lists the folders in the shared bucket.
 
@@ -57,7 +57,7 @@ rclone config create <project>-crypt crypt remote=cesnet:bioimage-but/<project>/
 ```
 For private data:
 ```
-rclone config create private crypt remote=cesnet:private-<name>/encrypted password=<password> --obscure
+rclone config create private crypt remote=cesnet:private-<user>/encrypted password=<password> --obscure
 ```
 `--obscure` only masks the password in `rclone.conf`, it does not encrypt it. Anyone who gets your
 `rclone.conf` also gets the password. Protect it like your AWS keys; optionally encrypt it with
@@ -88,6 +88,6 @@ Mounting as a drive (`rclone mount <project>-crypt: X:`) needs [WinFsp](https://
 Install: `winget install -e --id FiloSottile.age` / `apt install age` / `brew install age`
 ```
 age -p -o data.tar.age data.tar                 # encrypt with a password
-aws s3 cp data.tar.age s3://private-<name>/ --profile bioimage
+aws s3 cp data.tar.age s3://private-<user>/ --profile <user>
 age -d -o data.tar data.tar.age                 # decrypt
 ```

@@ -10,7 +10,7 @@ Encrypt sensitive data as described in the [encryption guide](SIFROVANI.en.md).
 ## Structure
 
 ```
-private-<name>/       your private bucket: only you and the administrator can access it
+private-<user>/       your private bucket: only you and the administrator can access it
 bioimage-but/         shared bucket
 ├── common/           read/write for all group members
 └── <project>/        project members and the administrator only
@@ -73,11 +73,13 @@ sudo installer -pkg AWSCLIV2.pkg -target /
 Check: `aws --version` must print `aws-cli/2.13` or newer.
 
 ### Setting up the profile
-Example with a profile named `bioimage` (the commands are the same on all systems):
+Replace `<user>` everywhere with your user name, the same as in your private bucket name
+`private-<user>` (e.g. `novak`). Likewise, replace `<project>` and `<password>` with real values.
+Name the profile after your user (the commands are the same on all systems):
 
 ```
-aws configure --profile bioimage
-aws configure set endpoint_url https://s3.cl4.du.cesnet.cz --profile bioimage
+aws configure --profile <user>
+aws configure set endpoint_url https://s3.cl4.du.cesnet.cz --profile <user>
 ```
 `aws configure` asks for the Access Key ID and Secret Access Key. Leave the region and output format
 empty (press Enter).
@@ -85,12 +87,12 @@ empty (press Enter).
 Result in `~/.aws/credentials` and `~/.aws/config` (on Windows `%USERPROFILE%\.aws\`):
 ```ini
 # ~/.aws/credentials
-[bioimage]
+[<user>]
 aws_access_key_id = …
 aws_secret_access_key = …
 
 # ~/.aws/config
-[profile bioimage]
+[profile <user>]
 endpoint_url = https://s3.cl4.du.cesnet.cz
 ```
 With an older CLI that does not support `endpoint_url` in the profile, add
@@ -98,7 +100,7 @@ With an older CLI that does not support `endpoint_url` in the profile, add
 
 ## 4. Send your ID to the administrator
 ```
-aws s3api list-buckets --query Owner.ID --output text --profile bioimage
+aws s3api list-buckets --query Owner.ID --output text --profile <user>
 ```
 This prints `94b66cdd_86a7_41a0_9d47_97f7b10fcdb7$<your_id>`. The part before `$` must be exactly this;
 otherwise your keys belong to a different group, so go back to step 2. Send the administrator
@@ -106,16 +108,16 @@ otherwise your keys belong to a different group, so go back to step 2. Send the 
 
 ## 5. Check your access (once the administrator confirms the setup)
 ```
-aws s3 ls s3://bioimage-but/ --profile bioimage                  # folders: common/, projects
-aws s3 ls s3://bioimage-but/<project>/ --profile bioimage        # contents of your project
-aws s3 ls s3://private-<name>/ --profile bioimage                # your private bucket
+aws s3 ls s3://bioimage-but/ --profile <user>                  # folders: common/, projects
+aws s3 ls s3://bioimage-but/<project>/ --profile <user>        # contents of your project
+aws s3 ls s3://private-<user>/ --profile <user>                # your private bucket
 ```
 
 ## Working with data
 ```
-aws s3 cp image.tif s3://bioimage-but/<project>/ --profile bioimage
-aws s3 sync ./data s3://bioimage-but/<project>/data --profile bioimage
-aws s3 sync ./data s3://private-<name>/data --profile bioimage
+aws s3 cp image.tif s3://bioimage-but/<project>/ --profile <user>
+aws s3 sync ./data s3://bioimage-but/<project>/data --profile <user>
+aws s3 sync ./data s3://private-<user>/data --profile <user>
 ```
 - `aws s3 ls` without a bucket shows nothing. Shared buckets do not appear in the listing; you have to
   name them.

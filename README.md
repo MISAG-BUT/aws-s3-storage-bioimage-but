@@ -10,7 +10,7 @@ Citlivá data šifruj podle [návodu k šifrování](SIFROVANI.md).
 ## Struktura
 
 ```
-private-<jméno>/      tvůj soukromý bucket: vidíš ho jen ty a správce
+private-<uzivatel>/      tvůj soukromý bucket: vidíš ho jen ty a správce
 bioimage-but/         sdílený bucket
 ├── common/           čtení i zápis pro všechny členy skupiny
 └── <projekt>/        jen členové projektu a správce
@@ -74,11 +74,13 @@ sudo installer -pkg AWSCLIV2.pkg -target /
 Ověření: `aws --version` musí vypsat `aws-cli/2.13` nebo vyšší.
 
 ### Nastavení profilu
-Příklad s profilem `bioimage` (příkazy jsou stejné na všech systémech):
+Za `<uzivatel>` všude dosaď své uživatelské jméno, stejné jako v názvu soukromého bucketu
+`private-<uzivatel>` (např. `novak`). Stejně tak `<projekt>` a `<heslo>` nahraď skutečnými hodnotami.
+Profil pojmenuj stejně jako svého uživatele (příkazy jsou stejné na všech systémech):
 
 ```
-aws configure --profile bioimage
-aws configure set endpoint_url https://s3.cl4.du.cesnet.cz --profile bioimage
+aws configure --profile <uzivatel>
+aws configure set endpoint_url https://s3.cl4.du.cesnet.cz --profile <uzivatel>
 ```
 `aws configure` se zeptá na Access Key ID a Secret Access Key. Region a výstupní formát nech
 prázdné (Enter).
@@ -86,12 +88,12 @@ prázdné (Enter).
 Výsledek v `~/.aws/credentials` a `~/.aws/config` (na Windows `%USERPROFILE%\.aws\`):
 ```ini
 # ~/.aws/credentials
-[bioimage]
+[<uzivatel>]
 aws_access_key_id = …
 aws_secret_access_key = …
 
 # ~/.aws/config
-[profile bioimage]
+[profile <uzivatel>]
 endpoint_url = https://s3.cl4.du.cesnet.cz
 ```
 Na starší verzi CLI, která `endpoint_url` v profilu nezná, přidávej ke každému příkazu
@@ -99,7 +101,7 @@ Na starší verzi CLI, která `endpoint_url` v profilu nezná, přidávej ke ka�
 
 ## 4. Pošli správci své ID
 ```
-aws s3api list-buckets --query Owner.ID --output text --profile bioimage
+aws s3api list-buckets --query Owner.ID --output text --profile <uzivatel>
 ```
 Vypíše `94b66cdd_86a7_41a0_9d47_97f7b10fcdb7$<tvoje_id>`. Část před `$` musí být přesně takhle;
 jinak máš klíče z jiné skupiny a vrať se ke kroku 2. Správci pošli **část za `$`** a napiš,
@@ -107,16 +109,16 @@ do kterých projektů potřebuješ přístup.
 
 ## 5. Ověř přístup (až ti správce potvrdí nastavení)
 ```
-aws s3 ls s3://bioimage-but/ --profile bioimage                  # složky: common/, projekty
-aws s3 ls s3://bioimage-but/<projekt>/ --profile bioimage        # obsah tvého projektu
-aws s3 ls s3://private-<jméno>/ --profile bioimage               # tvůj soukromý bucket
+aws s3 ls s3://bioimage-but/ --profile <uzivatel>                  # složky: common/, projekty
+aws s3 ls s3://bioimage-but/<projekt>/ --profile <uzivatel>        # obsah tvého projektu
+aws s3 ls s3://private-<uzivatel>/ --profile <uzivatel>               # tvůj soukromý bucket
 ```
 
 ## Práce s daty
 ```
-aws s3 cp soubor.tif s3://bioimage-but/<projekt>/ --profile bioimage
-aws s3 sync ./data s3://bioimage-but/<projekt>/data --profile bioimage
-aws s3 sync ./data s3://private-<jméno>/data --profile bioimage
+aws s3 cp soubor.tif s3://bioimage-but/<projekt>/ --profile <uzivatel>
+aws s3 sync ./data s3://bioimage-but/<projekt>/data --profile <uzivatel>
+aws s3 sync ./data s3://private-<uzivatel>/data --profile <uzivatel>
 ```
 - `aws s3 ls` bez bucketu nic neukáže. Sdílené buckety nejsou vidět ve výpisu, musíš je zadat jménem.
 - Chyba `argument of type 'NoneType' is not a container or iterable` znamená **přístup odepřen**.
