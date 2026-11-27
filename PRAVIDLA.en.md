@@ -11,6 +11,7 @@ private data unrelated to work, nor as the only copy of irreplaceable data.
 ## 2. Access
 - Access is granted to VO members based on an invitation. Keys are personal: do not share them and never
   commit them anywhere (git, shared scripts, notebooks).
+- The rclone config containing your keys **must always be encrypted with a password** (`rclone config encryption set`).
 - If you suspect a key has leaked, delete it in Gatekeeper immediately and tell the administrator.
 - The administrator has technical access to all data, including private buckets. This access is used
   only for administration (backups, clean-up, a member leaving, troubleshooting).

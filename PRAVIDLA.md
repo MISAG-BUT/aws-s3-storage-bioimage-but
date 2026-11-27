@@ -11,6 +11,7 @@ soukromá data nesouvisející s prací ani jako jediné úložiště nenahradit
 ## 2. Přístup
 - Přístup dostávají členové VO na základě pozvánky. Klíče jsou osobní, nikomu je nepředávej
   a nikam je necommituj (git, sdílené skripty, notebooky).
+- Konfigurace rclone s klíči **musí být vždy zašifrovaná heslem** (`rclone config encryption set`).
 - Při podezření na únik klíče ho okamžitě smaž v Gatekeeperu a dej vědět správci.
 - Správce má technický přístup ke všem datům včetně soukromých bucketů. Využije ho jen
   pro správu (zálohy, úklid, odchod člena, řešení problémů).

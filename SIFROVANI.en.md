@@ -6,8 +6,8 @@ Data is stored **unencrypted** on the server. The storage administrator can see 
 the provider (CESNET). **Upload sensitive data encrypted** using the rclone encryption layer (`crypt`) as
 described in this guide.
 
-Prerequisite: rclone is installed and the `cesnet:` connection is set up as described in the
-[member guide](README.en.md).
+Prerequisite: rclone is installed, its config is encrypted and the `cesnet:` connection is set up as
+described in the [member guide](README.en.md).
 
 ## Ground rules
 - **Lost password = lost data.** Neither the administrator nor CESNET can recover it. Keep the password
@@ -20,17 +20,25 @@ Prerequisite: rclone is installed and the `cesnet:` connection is set up as desc
   files into it.
 
 ## 1. Create the encryption layer
-For a project (one password shared by the whole project):
-```
-rclone config create <project>-crypt crypt remote=cesnet:bioimage-but/<project>/encrypted password=<password> --obscure
-```
-For private data:
-```
-rclone config create private crypt remote=cesnet:private-<user>/encrypted password=<password> --obscure
-```
-`--obscure` only masks the password in the rclone config, it does not encrypt it. Anyone who gets your
-config file also gets the password. Protect it like your keys; optionally encrypt it with
-`rclone config encryption set`.
+Run `rclone config` and answer as follows:
+
+| Prompt | Answer |
+|---|---|
+| `Enter configuration password` | your rclone config password |
+| `e/n/d/r/c/s/q>` | `n` (new remote) |
+| `name>` | project: `<project>-crypt`, private data: `private` |
+| `Storage>` | `crypt` |
+| `remote>` | project: `cesnet:bioimage-but/<project>/encrypted`<br>private data: `cesnet:private-<user>/encrypted` |
+| `filename_encryption>` | Enter (`standard`) |
+| `directory_name_encryption>` | Enter (`true`) |
+| `password` → `y/g>` | `y`, then `<password>` twice (for a project, the shared project password) |
+| `password2` → `y/g/n>` | `n` |
+| `Edit advanced config?` | `n` |
+| `Keep this ... remote?` | `y` |
+| `e/n/d/r/c/s/q>` | `q` |
+
+The encryption layer `<password>` is different from your rclone config password. Only you know the config
+password; the project password is shared by all project members.
 
 ## 2. Usage
 The same commands as in the [member guide](README.en.md), just use the encryption layer instead of `cesnet:…`:

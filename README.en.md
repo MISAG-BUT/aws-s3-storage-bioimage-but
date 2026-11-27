@@ -64,16 +64,42 @@ In Gatekeeper, the group page shows the **group ID (tenant)** and your **user ID
 
 Check: `rclone version`
 
-## 5. Set up the connection
+## 5. Encrypt the rclone config (mandatory)
+rclone stores your keys in its config file. **The file must always be encrypted with a password**, and
+you must do this before you enter any keys:
 ```
-rclone config create cesnet s3 provider=Ceph endpoint=https://s3.cl4.du.cesnet.cz access_key_id=<access_key> secret_access_key=<secret_key>
+rclone config encryption set
 ```
-The keys are stored in the rclone config file (`rclone config file` prints its location).
-They are stored in readable form, so never send or commit the file; optionally protect it with a
-password using `rclone config encryption set`. The command with your keys stays in your terminal
-history; if you do not want that, use the interactive `rclone config`.
+Enter a strong config password and keep it in a password manager. From now on rclone asks for it with
+every command (`Enter configuration password`).
 
-## 6. Check your access (once the administrator confirms the setup)
+Check: `rclone config file` prints the file path. The file must start with the line
+`# Encrypted rclone configuration File`.
+
+## 6. Set up the connection
+Run `rclone config` and answer as follows (for choices, type the text, not the number; numbers differ
+between versions):
+
+| Prompt | Answer |
+|---|---|
+| `Enter configuration password` | the config password from step 5 |
+| `n) New remote` | `n` |
+| `name>` | `cesnet` |
+| `Storage>` | `s3` |
+| `provider>` | `Ceph` |
+| `env_auth>` | Enter |
+| `access_key_id>` | your Access key from Gatekeeper |
+| `secret_access_key>` | your Secret key from Gatekeeper |
+| `region>` | Enter |
+| `endpoint>` | `https://s3.cl4.du.cesnet.cz` |
+| `location_constraint>`, `acl>`, `server_side_encryption>`, `sse_kms_key_id>`, `bucket_object_lock_enabled>` | Enter |
+| `Edit advanced config?` | `n` |
+| `Keep this "cesnet" remote?` | `y` |
+| `e/n/d/r/c/s/q>` | `q` (quit) |
+
+Never send or commit the config file, not even the encrypted one.
+
+## 7. Check your access (once the administrator confirms the setup)
 ```
 rclone lsd cesnet:bioimage-but                   # folders: common, projects
 rclone ls cesnet:bioimage-but/<project>          # contents of your project

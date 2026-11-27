@@ -5,7 +5,8 @@
 Data jsou na serveru uložená **nešifrovaně**. Vidí je správce úložiště a technicky i provozovatel (CESNET).
 **Citlivá data proto nahrávej zašifrovaná** přes šifrovanou vrstvu rclone (`crypt`) podle tohoto návodu.
 
-Předpoklad: máš rclone nainstalovaný a nastavené připojení `cesnet:` podle [návodu pro členy](README.md).
+Předpoklad: máš rclone nainstalovaný, konfiguraci zašifrovanou a nastavené připojení `cesnet:` podle
+[návodu pro členy](README.md).
 
 ## Zásady
 - **Ztracené heslo = ztracená data.** Správce ani CESNET je neobnoví. Ulož si heslo do správce hesel.
@@ -16,16 +17,25 @@ Předpoklad: máš rclone nainstalovaný a nastavené připojení `cesnet:` podl
 - Šifruj vždy do podsložky `encrypted/` (např. `<projekt>/encrypted/`) a nemíchej do ní nešifrované soubory.
 
 ## 1. Vytvoř šifrovanou vrstvu
-Pro projekt (heslo společné pro celý projekt):
-```
-rclone config create <projekt>-crypt crypt remote=cesnet:bioimage-but/<projekt>/encrypted password=<heslo> --obscure
-```
-Pro soukromá data:
-```
-rclone config create soukrome crypt remote=cesnet:private-<uzivatel>/encrypted password=<heslo> --obscure
-```
-`--obscure` heslo v konfiguraci rclone jen zamaskuje, nešifruje. Kdo získá tvůj konfigurační soubor,
-získá i heslo. Chraň ho stejně jako klíče; volitelně ho zašifruj příkazem `rclone config encryption set`.
+Spusť `rclone config` a odpovídej takto:
+
+| Otázka | Odpověď |
+|---|---|
+| `Enter configuration password` | heslo ke konfiguraci rclone |
+| `e/n/d/r/c/s/q>` | `n` (nový remote) |
+| `name>` | projekt: `<projekt>-crypt`, soukromá data: `soukrome` |
+| `Storage>` | `crypt` |
+| `remote>` | projekt: `cesnet:bioimage-but/<projekt>/encrypted`<br>soukromá data: `cesnet:private-<uzivatel>/encrypted` |
+| `filename_encryption>` | Enter (`standard`) |
+| `directory_name_encryption>` | Enter (`true`) |
+| `password` → `y/g>` | `y`, pak 2× `<heslo>` (u projektu společné heslo projektu) |
+| `password2` → `y/g/n>` | `n` |
+| `Edit advanced config?` | `n` |
+| `Keep this ... remote?` | `y` |
+| `e/n/d/r/c/s/q>` | `q` |
+
+`<heslo>` šifrovací vrstvy je jiné než heslo ke konfiguraci rclone. Heslo ke konfiguraci máš jen ty,
+heslo projektu sdílí všichni jeho členové.
 
 ## 2. Používání
 Stejné příkazy jako v [návodu pro členy](README.md), jen místo `cesnet:…` použiješ šifrovanou vrstvu:

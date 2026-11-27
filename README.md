@@ -64,16 +64,41 @@ V Gatekeeperu u skupiny najdeš **ID skupiny (tenant)** a **ID uživatele**.
 
 Ověření: `rclone version`
 
-## 5. Nastav připojení
+## 5. Zašifruj konfiguraci rclone (povinné)
+rclone si ukládá klíče do konfiguračního souboru. **Ten musí být vždy zašifrovaný heslem**, a to ještě
+předtím, než do něj klíče zadáš:
 ```
-rclone config create cesnet s3 provider=Ceph endpoint=https://s3.cl4.du.cesnet.cz access_key_id=<access_key> secret_access_key=<secret_key>
+rclone config encryption set
 ```
-Klíče se uloží do konfiguračního souboru rclone (umístění vypíše `rclone config file`).
-Klíče jsou v něm uložené čitelně, takže soubor nikomu neposílej a necommituj; volitelně ho zašifruj heslem příkazem
-`rclone config encryption set`. Příkaz s klíči zůstane v historii terminálu; pokud to nechceš, použij
-interaktivní `rclone config`.
+Zadej silné heslo ke konfiguraci a ulož si ho do správce hesel. Od teď se na něj rclone zeptá při
+každém příkazu (`Enter configuration password`).
 
-## 6. Ověř přístup (až ti správce potvrdí nastavení)
+Kontrola: `rclone config file` vypíše cestu k souboru. Soubor musí začínat řádkem
+`# Encrypted rclone configuration File`.
+
+## 6. Nastav připojení
+Spusť `rclone config` a odpovídej takto (u výběru napiš text, ne číslo; čísla se mezi verzemi liší):
+
+| Otázka | Odpověď |
+|---|---|
+| `Enter configuration password` | heslo ke konfiguraci z kroku 5 |
+| `n) New remote` | `n` |
+| `name>` | `cesnet` |
+| `Storage>` | `s3` |
+| `provider>` | `Ceph` |
+| `env_auth>` | Enter |
+| `access_key_id>` | tvůj Access key z Gatekeeperu |
+| `secret_access_key>` | tvůj Secret key z Gatekeeperu |
+| `region>` | Enter |
+| `endpoint>` | `https://s3.cl4.du.cesnet.cz` |
+| `location_constraint>`, `acl>`, `server_side_encryption>`, `sse_kms_key_id>`, `bucket_object_lock_enabled>` | Enter |
+| `Edit advanced config?` | `n` |
+| `Keep this "cesnet" remote?` | `y` |
+| `e/n/d/r/c/s/q>` | `q` (konec) |
+
+Konfiguraci nikomu neposílej a necommituj, ani zašifrovanou.
+
+## 7. Ověř přístup (až ti správce potvrdí nastavení)
 ```
 rclone lsd cesnet:bioimage-but                   # složky: common, projekty
 rclone ls cesnet:bioimage-but/<projekt>          # obsah tvého projektu
