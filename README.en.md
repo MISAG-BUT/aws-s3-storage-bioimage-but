@@ -4,8 +4,8 @@
 
 Group S3 storage at CESNET (`https://s3.cl4.du.cesnet.cz`).
 
-**Read the [terms of use](PRAVIDLA.md) before you start** (Czech only for now).
-Encrypt sensitive data as described in the [encryption guide](SIFROVANI.md) (Czech only for now).
+**Read the [terms of use](PRAVIDLA.en.md) before you start.**
+Encrypt sensitive data as described in the [encryption guide](SIFROVANI.en.md).
 
 ## Structure
 

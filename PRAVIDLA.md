@@ -1,5 +1,7 @@
 # Pravidla a podmínky používání úložiště bioimage-but
 
+🇨🇿 Česky · [🇬🇧 English](PRAVIDLA.en.md)
+
 > **TODO / NÁVRH:** pracovní verze k doplnění a schválení správcem. Body označené ❓ je potřeba rozhodnout.
 
 ## 1. Účel
