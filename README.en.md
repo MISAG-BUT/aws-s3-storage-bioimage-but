@@ -140,7 +140,7 @@ rclone copy cesnet:bioimage-but/<project>/data ./data      # download
 rclone check ./data cesnet:bioimage-but/<project>/data     # compare local data with S3
 rclone cat cesnet:bioimage-but/<project>/notes.txt         # print a file
 rclone deletefile cesnet:bioimage-but/<project>/file.tif   # delete a file
-rclone delete cesnet:bioimage-but/<project>/old            # delete the contents of a folder
+rclone delete cesnet:bioimage-but/<project>/old            # delete a whole folder incl. subfolders
 rclone link --expire 7d cesnet:bioimage-but/<project>/file.tif   # download link for anyone
 ```
 - **`rclone sync SOURCE DEST`** makes the destination an exact copy of the source: it **deletes** everything
@@ -149,7 +149,20 @@ rclone link --expire 7d cesnet:bioimage-but/<project>/file.tif   # download link
 - Try `sync` and deletions with `--dry-run` first. Deleted files cannot be restored, neither on S3 nor locally.
 - `rclone ls cesnet:bioimage-but` (the whole bucket at once) fails with 403. Always specify the project.
 - `403 AccessDenied` means you do not have access to that folder.
-- S3 has no empty folders. A folder appears with its first file; `rclone mkdir` does nothing.
+- S3 has no empty folders. A folder appears with its first file and disappears with its last one:
+  `rclone mkdir` does nothing and after `rclone delete` the folder disappears by itself, no `rmdir` needed.
+
+### Deleting a non-empty folder
+First check what will be deleted, then delete:
+```
+rclone delete cesnet:bioimage-but/<project>/folder --dry-run
+```
+```
+rclone delete cesnet:bioimage-but/<project>/folder
+```
+This deletes all files in the folder and its subfolders. Delete encrypted data through the encryption
+layer (`rclone delete <project>-crypt:folder`). `rclone purge` also deletes the folder, but on our storage
+it prints a harmless `GetBucketVersioning ... 403` error, so use `delete`.
 - A `rclone link` link works for anyone who has it until it expires (max. 7 days).
 - `common/` is shared by the whole group. Anyone can read, overwrite and delete files there.
 

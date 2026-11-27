@@ -56,6 +56,8 @@ rclone sync <projekt>-crypt:data ./data          # opačně: LOKÁLNĚ smaže, c
 rclone ls <projekt>-crypt:                       # výpis s rozšifrovanými názvy
 rclone copy <projekt>-crypt:data ./obnova        # stáhne a rozšifruje
 rclone cat <projekt>-crypt:data/soubor.txt       # vypíše jeden soubor
+rclone delete <projekt>-crypt:data --dry-run     # ukáže, co se smaže (celá složka i s podsložkami)
+rclone delete <projekt>-crypt:data               # smaže
 rclone cryptcheck ./data <projekt>-crypt:data    # ověří, že data na S3 odpovídají lokálním
 ```
 

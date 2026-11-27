@@ -139,7 +139,7 @@ rclone copy cesnet:bioimage-but/<projekt>/data ./data      # stáhne
 rclone check ./data cesnet:bioimage-but/<projekt>/data     # porovná lokální data s S3
 rclone cat cesnet:bioimage-but/<projekt>/poznamka.txt      # vypíše soubor
 rclone deletefile cesnet:bioimage-but/<projekt>/soubor.tif # smaže soubor
-rclone delete cesnet:bioimage-but/<projekt>/stare          # smaže obsah složky
+rclone delete cesnet:bioimage-but/<projekt>/stare          # smaže celou složku i s podsložkami
 rclone link --expire 7d cesnet:bioimage-but/<projekt>/soubor.tif   # odkaz ke stažení pro kohokoli
 ```
 - **`rclone sync ZDROJ CÍL`** udělá z cíle přesnou kopii zdroje: v cíli **smaže** vše, co ve zdroji není.
@@ -148,7 +148,20 @@ rclone link --expire 7d cesnet:bioimage-but/<projekt>/soubor.tif   # odkaz ke st
 - Před `sync` a mazáním si to vyzkoušej s `--dry-run`. Smazané soubory nejde obnovit, ani na S3, ani lokálně.
 - `rclone ls cesnet:bioimage-but` (celý bucket najednou) skončí chybou 403. Vždy zadej projekt.
 - `403 AccessDenied` znamená, že do dané složky nemáš přístup.
-- S3 nemá prázdné složky. Složka vznikne až s prvním souborem, `rclone mkdir` nic neudělá.
+- S3 nemá prázdné složky. Složka vznikne až s prvním souborem a zmizí s posledním: `rclone mkdir` nic
+  neudělá a po `rclone delete` složka zmizí sama, `rmdir` není potřeba.
+
+### Smazání neprázdné složky
+Nejdřív se podívej, co se smaže, a pak smaž:
+```
+rclone delete cesnet:bioimage-but/<projekt>/slozka --dry-run
+```
+```
+rclone delete cesnet:bioimage-but/<projekt>/slozka
+```
+Smaže všechny soubory ve složce i v podsložkách. Šifrovaná data mažeš přes šifrovanou vrstvu
+(`rclone delete <projekt>-crypt:slozka`). `rclone purge` složku smaže také, ale na našem úložišti vypíše
+neškodnou chybu `GetBucketVersioning ... 403`, proto používej `delete`.
 - Odkaz z `rclone link` funguje pro kohokoli, kdo ho má, až do vypršení (max. 7 dní).
 - `common/` je pro všechny ve skupině. Každý tam může soubory číst, přepsat i smazat.
 

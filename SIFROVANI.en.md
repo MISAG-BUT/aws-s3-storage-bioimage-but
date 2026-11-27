@@ -59,6 +59,8 @@ rclone sync <project>-crypt:data ./data          # reverse: deletes LOCALLY what
 rclone ls <project>-crypt:                       # listing with decrypted names
 rclone copy <project>-crypt:data ./restore       # download and decrypt
 rclone cat <project>-crypt:data/file.txt         # print a single file
+rclone delete <project>-crypt:data --dry-run     # show what would be deleted (whole folder incl. subfolders)
+rclone delete <project>-crypt:data               # delete
 rclone cryptcheck ./data <project>-crypt:data    # verify that data on S3 matches the local copy
 ```
 
