@@ -2,10 +2,13 @@
 
 [🇨🇿 Česky](README.md) · 🇬🇧 English
 
-Group S3 storage at CESNET (`https://s3.cl4.du.cesnet.cz`).
+Group S3 storage at CESNET (`https://s3.cl4.du.cesnet.cz`). You work with it using **rclone**.
 
 **Read the [terms of use](PRAVIDLA.en.md) before you start.**
 Encrypt sensitive data as described in the [encryption guide](SIFROVANI.en.md).
+
+In the commands, replace `<user>` with your user name (the same as in your private bucket name,
+e.g. `novak`), `<project>` with the project name and `<password>` with your password.
 
 ## Structure
 
@@ -36,93 +39,52 @@ invitation and sign in with your home institution.
 5. **Save the Access key and the Secret key right away.** The secret key is shown only once. If you
    lose it, create a new key and delete the old one in Gatekeeper.
 
-Gatekeeper also shows the S3 endpoint and your user ID.
+## 3. Send your ID to the administrator
+In Gatekeeper, the group page shows the **group ID (tenant)** and your **user ID**.
+- The group ID must be `94b66cdd_86a7_41a0_9d47_97f7b10fcdb7`. If it is different, you are in a different
+  group; go back to step 2.
+- Send the administrator your **user ID** and tell them which projects you need access to.
 
-## 3. Install the AWS CLI and set up a profile
+## 4. Install rclone
+- **Windows** (PowerShell): `winget install -e --id Rclone.Rclone`, then open a new terminal
+- **Linux:** `sudo -v ; curl https://rclone.org/install.sh | sudo bash`
+  (without sudo, e.g. on a cluster: download the [binary](https://rclone.org/downloads/) to `~/.local/bin`)
+- **macOS:** `brew install rclone`
 
-### Installing AWS CLI v2
-You need **AWS CLI v2, version 2.13 or newer**. The `awscli` package from `apt`/`pip` is often the old
-version 1, which is not enough. Official guide:
-[Installing the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
+Check: `rclone version`
 
-**Windows** (PowerShell):
-```powershell
-winget install -e --id Amazon.AWSCLI
-# or without winget:
-msiexec.exe /i https://awscli.amazonaws.com/AWSCLIV2.msi
+## 5. Set up the connection
 ```
-Open a new terminal window after installing.
-
-**Linux** (x86_64; on ARM replace `x86_64` with `aarch64`):
-```bash
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o awscliv2.zip
-unzip awscliv2.zip
-sudo ./aws/install                     # update: sudo ./aws/install --update
-# without sudo (e.g. on a server/cluster):
-./aws/install -i ~/.local/aws-cli -b ~/.local/bin
+rclone config create cesnet s3 provider=Ceph endpoint=https://s3.cl4.du.cesnet.cz access_key_id=<access_key> secret_access_key=<secret_key>
 ```
+The keys are stored in the rclone config file (`rclone config file` prints its location).
+They are stored in readable form, so never send or commit the file; optionally protect it with a
+password using `rclone config encryption set`. The command with your keys stays in your terminal
+history; if you do not want that, use the interactive `rclone config`.
 
-**macOS**:
-```bash
-brew install awscli
-# or the official package:
-curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o AWSCLIV2.pkg
-sudo installer -pkg AWSCLIV2.pkg -target /
+## 6. Check your access (once the administrator confirms the setup)
 ```
-
-Check: `aws --version` must print `aws-cli/2.13` or newer.
-
-### Setting up the profile
-Replace `<user>` everywhere with your user name, the same as in your private bucket name
-`private-<user>` (e.g. `novak`). Likewise, replace `<project>` and `<password>` with real values.
-Name the profile after your user (the commands are the same on all systems):
-
-```
-aws configure --profile <user>
-aws configure set endpoint_url https://s3.cl4.du.cesnet.cz --profile <user>
-```
-`aws configure` asks for the Access Key ID and Secret Access Key. Leave the region and output format
-empty (press Enter).
-
-Result in `~/.aws/credentials` and `~/.aws/config` (on Windows `%USERPROFILE%\.aws\`):
-```ini
-# ~/.aws/credentials
-[<user>]
-aws_access_key_id = …
-aws_secret_access_key = …
-
-# ~/.aws/config
-[profile <user>]
-endpoint_url = https://s3.cl4.du.cesnet.cz
-```
-With an older CLI that does not support `endpoint_url` in the profile, add
-`--endpoint-url https://s3.cl4.du.cesnet.cz` to every command.
-
-## 4. Send your ID to the administrator
-```
-aws s3api list-buckets --query Owner.ID --output text --profile <user>
-```
-This prints `94b66cdd_86a7_41a0_9d47_97f7b10fcdb7$<your_id>`. The part before `$` must be exactly this;
-otherwise your keys belong to a different group, so go back to step 2. Send the administrator
-**the part after `$`** and tell them which projects you need access to.
-
-## 5. Check your access (once the administrator confirms the setup)
-```
-aws s3 ls s3://bioimage-but/ --profile <user>                  # folders: common/, projects
-aws s3 ls s3://bioimage-but/<project>/ --profile <user>        # contents of your project
-aws s3 ls s3://private-<user>/ --profile <user>                # your private bucket
+rclone lsd cesnet:bioimage-but                   # folders: common, projects
+rclone ls cesnet:bioimage-but/<project>          # contents of your project
+rclone ls cesnet:private-<user>                  # your private bucket
 ```
 
 ## Working with data
 ```
-aws s3 cp image.tif s3://bioimage-but/<project>/ --profile <user>
-aws s3 sync ./data s3://bioimage-but/<project>/data --profile <user>
-aws s3 sync ./data s3://private-<user>/data --profile <user>
+rclone copy ./data cesnet:bioimage-but/<project>/data      # upload (skips identical files)
+rclone sync ./data cesnet:bioimage-but/<project>/data      # mirror; deletes on S3 what is missing locally
+rclone copy cesnet:bioimage-but/<project>/data ./data      # download
+rclone check ./data cesnet:bioimage-but/<project>/data     # compare local data with S3
+rclone cat cesnet:bioimage-but/<project>/notes.txt         # print a file
+rclone deletefile cesnet:bioimage-but/<project>/file.tif   # delete a file
+rclone delete cesnet:bioimage-but/<project>/old            # delete the contents of a folder
+rclone link --expire 7d cesnet:bioimage-but/<project>/file.tif   # download link for anyone
 ```
-- `aws s3 ls` without a bucket shows nothing. Shared buckets do not appear in the listing; you have to
-  name them.
-- The error `argument of type 'NoneType' is not a container or iterable` means **access denied**.
-  Check the endpoint, the profile, and whether you are a member of the project you are writing to.
+- Try `sync` and deletions with `--dry-run` first. Deleted files cannot be restored.
+- `rclone ls cesnet:bioimage-but` (the whole bucket at once) fails with 403. Always specify the project.
+- `403 AccessDenied` means you do not have access to that folder.
+- S3 has no empty folders. A folder appears with its first file; `rclone mkdir` does nothing.
+- A `rclone link` link works for anyone who has it until it expires (max. 7 days).
 - `common/` is shared by the whole group. Anyone can read, overwrite and delete files there.
 
 ## Contact

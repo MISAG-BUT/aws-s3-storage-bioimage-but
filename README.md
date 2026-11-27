@@ -2,15 +2,18 @@
 
 🇨🇿 Česky · [🇬🇧 English](README.en.md)
 
-Skupinové S3 úložiště na CESNET (`https://s3.cl4.du.cesnet.cz`).
+Skupinové S3 úložiště na CESNET (`https://s3.cl4.du.cesnet.cz`). Pracuje se s ním nástrojem **rclone**.
 
 **Před použitím si přečti [pravidla používání](PRAVIDLA.md).**
 Citlivá data šifruj podle [návodu k šifrování](SIFROVANI.md).
 
+V příkazech nahraď `<uzivatel>` svým uživatelským jménem (stejným jako v názvu soukromého bucketu,
+např. `novak`), `<projekt>` názvem projektu a `<heslo>` svým heslem.
+
 ## Struktura
 
 ```
-private-<uzivatel>/      tvůj soukromý bucket: vidíš ho jen ty a správce
+private-<uzivatel>/   tvůj soukromý bucket: vidíš ho jen ty a správce
 bioimage-but/         sdílený bucket
 ├── common/           čtení i zápis pro všechny členy skupiny
 └── <projekt>/        jen členové projektu a správce
@@ -19,7 +22,6 @@ bioimage-but/         sdílený bucket
 - V kořeni `bioimage-but` vidíš názvy všech projektů, dovnitř ale jen do těch svých.
 - Přístupy nastavuje správce. O přidání do projektu nebo nový projekt požádej jeho.
 - Správce má technický přístup ke všem datům včetně soukromých bucketů.
-
 
 ## 1. Přijmi pozvánku do VO
 Správce tě pozve do virtuální organizace (VO) přes e-INFRA CZ (Perun). Pozvánku přijmi
@@ -37,92 +39,52 @@ a přihlas se svou domovskou institucí.
 5. **Hned si ulož Access key i Secret key.** Secret key se zobrazí jen jednou. Když ho ztratíš,
    vygeneruj nový klíč a starý v Gatekeeperu smaž.
 
-V Gatekeeperu je vidět i S3 endpoint a tvoje ID uživatele.
+## 3. Pošli správci své ID
+V Gatekeeperu u skupiny najdeš **ID skupiny (tenant)** a **ID uživatele**.
+- ID skupiny musí být `94b66cdd_86a7_41a0_9d47_97f7b10fcdb7`. Pokud je jiné, jsi v jiné skupině;
+  vrať se ke kroku 2.
+- Správci pošli **ID uživatele** a napiš, do kterých projektů potřebuješ přístup.
 
-## 3. Nainstaluj AWS CLI a nastav profil
+## 4. Nainstaluj rclone
+- **Windows** (PowerShell): `winget install -e --id Rclone.Rclone`, pak otevři nový terminál
+- **Linux:** `sudo -v ; curl https://rclone.org/install.sh | sudo bash`
+  (bez sudo, např. na clusteru: stáhni [binárku](https://rclone.org/downloads/) do `~/.local/bin`)
+- **macOS:** `brew install rclone`
 
-### Instalace AWS CLI v2
-Potřebuješ **AWS CLI v2 ve verzi 2.13 nebo novější**. Balíček `awscli` z `apt`/`pip` bývá stará
-verze 1, ta nestačí. Oficiální návod:
-[Installing the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
+Ověření: `rclone version`
 
-**Windows** (PowerShell):
-```powershell
-winget install -e --id Amazon.AWSCLI
-# nebo bez winget:
-msiexec.exe /i https://awscli.amazonaws.com/AWSCLIV2.msi
+## 5. Nastav připojení
 ```
-Po instalaci otevři nové okno terminálu.
-
-**Linux** (x86_64; na ARM nahraď `x86_64` za `aarch64`):
-```bash
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o awscliv2.zip
-unzip awscliv2.zip
-sudo ./aws/install                     # aktualizace: sudo ./aws/install --update
-# bez sudo (např. na serveru/clusteru):
-./aws/install -i ~/.local/aws-cli -b ~/.local/bin
+rclone config create cesnet s3 provider=Ceph endpoint=https://s3.cl4.du.cesnet.cz access_key_id=<access_key> secret_access_key=<secret_key>
 ```
+Klíče se uloží do konfiguračního souboru rclone (umístění vypíše `rclone config file`).
+Klíče jsou v něm uložené čitelně, takže soubor nikomu neposílej a necommituj; volitelně ho zašifruj heslem příkazem
+`rclone config encryption set`. Příkaz s klíči zůstane v historii terminálu; pokud to nechceš, použij
+interaktivní `rclone config`.
 
-**macOS**:
-```bash
-brew install awscli
-# nebo oficiální balíček:
-curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o AWSCLIV2.pkg
-sudo installer -pkg AWSCLIV2.pkg -target /
+## 6. Ověř přístup (až ti správce potvrdí nastavení)
 ```
-
-Ověření: `aws --version` musí vypsat `aws-cli/2.13` nebo vyšší.
-
-### Nastavení profilu
-Za `<uzivatel>` všude dosaď své uživatelské jméno, stejné jako v názvu soukromého bucketu
-`private-<uzivatel>` (např. `novak`). Stejně tak `<projekt>` a `<heslo>` nahraď skutečnými hodnotami.
-Profil pojmenuj stejně jako svého uživatele (příkazy jsou stejné na všech systémech):
-
-```
-aws configure --profile <uzivatel>
-aws configure set endpoint_url https://s3.cl4.du.cesnet.cz --profile <uzivatel>
-```
-`aws configure` se zeptá na Access Key ID a Secret Access Key. Region a výstupní formát nech
-prázdné (Enter).
-
-Výsledek v `~/.aws/credentials` a `~/.aws/config` (na Windows `%USERPROFILE%\.aws\`):
-```ini
-# ~/.aws/credentials
-[<uzivatel>]
-aws_access_key_id = …
-aws_secret_access_key = …
-
-# ~/.aws/config
-[profile <uzivatel>]
-endpoint_url = https://s3.cl4.du.cesnet.cz
-```
-Na starší verzi CLI, která `endpoint_url` v profilu nezná, přidávej ke každému příkazu
-`--endpoint-url https://s3.cl4.du.cesnet.cz`.
-
-## 4. Pošli správci své ID
-```
-aws s3api list-buckets --query Owner.ID --output text --profile <uzivatel>
-```
-Vypíše `94b66cdd_86a7_41a0_9d47_97f7b10fcdb7$<tvoje_id>`. Část před `$` musí být přesně takhle;
-jinak máš klíče z jiné skupiny a vrať se ke kroku 2. Správci pošli **část za `$`** a napiš,
-do kterých projektů potřebuješ přístup.
-
-## 5. Ověř přístup (až ti správce potvrdí nastavení)
-```
-aws s3 ls s3://bioimage-but/ --profile <uzivatel>                  # složky: common/, projekty
-aws s3 ls s3://bioimage-but/<projekt>/ --profile <uzivatel>        # obsah tvého projektu
-aws s3 ls s3://private-<uzivatel>/ --profile <uzivatel>               # tvůj soukromý bucket
+rclone lsd cesnet:bioimage-but                   # složky: common, projekty
+rclone ls cesnet:bioimage-but/<projekt>          # obsah tvého projektu
+rclone ls cesnet:private-<uzivatel>              # tvůj soukromý bucket
 ```
 
 ## Práce s daty
 ```
-aws s3 cp soubor.tif s3://bioimage-but/<projekt>/ --profile <uzivatel>
-aws s3 sync ./data s3://bioimage-but/<projekt>/data --profile <uzivatel>
-aws s3 sync ./data s3://private-<uzivatel>/data --profile <uzivatel>
+rclone copy ./data cesnet:bioimage-but/<projekt>/data      # nahraje (přeskočí shodné soubory)
+rclone sync ./data cesnet:bioimage-but/<projekt>/data      # zrcadlí, na S3 smaže, co lokálně chybí
+rclone copy cesnet:bioimage-but/<projekt>/data ./data      # stáhne
+rclone check ./data cesnet:bioimage-but/<projekt>/data     # porovná lokální data s S3
+rclone cat cesnet:bioimage-but/<projekt>/poznamka.txt      # vypíše soubor
+rclone deletefile cesnet:bioimage-but/<projekt>/soubor.tif # smaže soubor
+rclone delete cesnet:bioimage-but/<projekt>/stare          # smaže obsah složky
+rclone link --expire 7d cesnet:bioimage-but/<projekt>/soubor.tif   # odkaz ke stažení pro kohokoli
 ```
-- `aws s3 ls` bez bucketu nic neukáže. Sdílené buckety nejsou vidět ve výpisu, musíš je zadat jménem.
-- Chyba `argument of type 'NoneType' is not a container or iterable` znamená **přístup odepřen**.
-  Zkontroluj endpoint, profil a jestli jsi v projektu, kam zapisuješ.
+- Před `sync` a mazáním si to vyzkoušej s `--dry-run`. Smazané soubory nejde obnovit.
+- `rclone ls cesnet:bioimage-but` (celý bucket najednou) skončí chybou 403. Vždy zadej projekt.
+- `403 AccessDenied` znamená, že do dané složky nemáš přístup.
+- S3 nemá prázdné složky. Složka vznikne až s prvním souborem, `rclone mkdir` nic neudělá.
+- Odkaz z `rclone link` funguje pro kohokoli, kdo ho má, až do vypršení (max. 7 dní).
 - `common/` je pro všechny ve skupině. Každý tam může soubory číst, přepsat i smazat.
 
 ## Kontakt
