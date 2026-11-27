@@ -145,6 +145,15 @@ $env:RCLONE_CONFIG_PASS = Read-Host -MaskInput "rclone config password"
 Remove-Item Env:\RCLONE_CONFIG_PASS
 ```
 
+**Windows (PowerShell 5.1)**, the default "Windows PowerShell", which lacks `-MaskInput`:
+```powershell
+$s = Read-Host -AsSecureString "rclone config password"
+$env:RCLONE_CONFIG_PASS = (New-Object PSCredential "x", $s).GetNetworkCredential().Password
+.\my_script.ps1
+Remove-Item Env:\RCLONE_CONFIG_PASS
+```
+Check your version with `$PSVersionTable.PSVersion`.
+
 **Unattended jobs** (cron, cluster jobs) where nobody can type the password: store it in a file readable
 only by you and pass it via `RCLONE_PASSWORD_COMMAND`:
 ```bash

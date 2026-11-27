@@ -144,6 +144,15 @@ $env:RCLONE_CONFIG_PASS = Read-Host -MaskInput "Heslo ke konfiguraci rclone"
 Remove-Item Env:\RCLONE_CONFIG_PASS
 ```
 
+**Windows (PowerShell 5.1)**, výchozí „Windows PowerShell“, který nezná `-MaskInput`:
+```powershell
+$s = Read-Host -AsSecureString "Heslo ke konfiguraci rclone"
+$env:RCLONE_CONFIG_PASS = (New-Object PSCredential "x", $s).GetNetworkCredential().Password
+.\muj_skript.ps1
+Remove-Item Env:\RCLONE_CONFIG_PASS
+```
+Verzi zjistíš příkazem `$PSVersionTable.PSVersion`.
+
 **Úlohy bez obsluhy** (cron, úlohy na clusteru), kde heslo nemá kdo zadat: ulož ho do souboru čitelného
 jen pro tebe a předej ho přes `RCLONE_PASSWORD_COMMAND`:
 ```bash
