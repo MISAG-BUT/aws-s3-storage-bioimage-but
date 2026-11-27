@@ -233,6 +233,10 @@ na tomto počítači.
    ```powershell
    $env:RCLONE_PASSWORD_COMMAND = "powershell -NoProfile -ExecutionPolicy Bypass -File `"$env:APPDATA\rclone\rclone-pass.ps1`""
    ```
+4. Kontrola: v terminálu, kde jsi spustil krok 3, se rclone nesmí ptát na heslo:
+   ```powershell
+   $null | rclone lsd cesnet:bioimage-but
+   ```
 
 **Linux / macOS (cron, cluster):**
 ```bash
@@ -243,8 +247,7 @@ Do skriptu úlohy dej:
 ```bash
 export RCLONE_PASSWORD_COMMAND="cat $HOME/.config/rclone/pass"
 ```
-
-**Kontrola** (rclone se nesmí ptát na heslo): na Windows spusť skript úlohy ručně, na Linuxu / macOS:
+Kontrola (rclone se nesmí ptát na heslo):
 ```bash
 RCLONE_PASSWORD_COMMAND="cat $HOME/.config/rclone/pass" rclone lsd cesnet:bioimage-but < /dev/null
 ```

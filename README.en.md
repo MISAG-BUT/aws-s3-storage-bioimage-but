@@ -235,6 +235,10 @@ on this computer.
    ```powershell
    $env:RCLONE_PASSWORD_COMMAND = "powershell -NoProfile -ExecutionPolicy Bypass -File `"$env:APPDATA\rclone\rclone-pass.ps1`""
    ```
+4. Check: in the terminal where you ran step 3, rclone must not ask for the password:
+   ```powershell
+   $null | rclone lsd cesnet:bioimage-but
+   ```
 
 **Linux / macOS (cron, cluster):**
 ```bash
@@ -245,8 +249,7 @@ In the job script:
 ```bash
 export RCLONE_PASSWORD_COMMAND="cat $HOME/.config/rclone/pass"
 ```
-
-**Check** (rclone must not ask for the password): on Windows, run the job script manually; on Linux / macOS:
+Check (rclone must not ask for the password):
 ```bash
 RCLONE_PASSWORD_COMMAND="cat $HOME/.config/rclone/pass" rclone lsd cesnet:bioimage-but < /dev/null
 ```
