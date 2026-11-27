@@ -46,23 +46,38 @@ V Gatekeeperu u skupiny najdeš **ID skupiny (tenant)** a **ID uživatele**.
 - Správci pošli **ID uživatele** a napiš, do kterých projektů potřebuješ přístup.
 
 ## 4. Nainstaluj rclone
-- **Windows** (PowerShell): `winget install -e --id Rclone.Rclone`, pak otevři nový terminál
+- **Windows** (PowerShell), pak otevři nový terminál:
+  ```powershell
+  winget install -e --id Rclone.Rclone
+  ```
 - **Linux** (se sudo):
   ```bash
   sudo -v ; curl https://rclone.org/install.sh | sudo bash
   ```
   Instalace může trvat několik minut (aktualizuje se rejstřík manuálových stránek). Pokud skončí
-  chybou kvůli chybějícímu `unzip`, spusť nejdřív `sudo apt install unzip`.
+  chybou kvůli chybějícímu `unzip`, spusť nejdřív:
+  ```bash
+  sudo apt install unzip
+  ```
 - **Linux** (bez sudo, např. na serveru nebo clusteru; na ARM nahraď `amd64` za `arm64`):
   ```bash
   curl -O https://downloads.rclone.org/rclone-current-linux-amd64.zip
   python3 -m zipfile -e rclone-current-linux-amd64.zip .
   mkdir -p ~/.local/bin && cp rclone-*-linux-amd64/rclone ~/.local/bin/ && chmod +x ~/.local/bin/rclone
   ```
-  Pokud příkaz `rclone` nejde najít, přidej do `~/.bashrc` řádek `export PATH="$HOME/.local/bin:$PATH"`.
-- **macOS:** `brew install rclone`
+  Pokud příkaz `rclone` nejde najít, přidej `~/.local/bin` do cesty:
+  ```bash
+  echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc && source ~/.bashrc
+  ```
+- **macOS:**
+  ```bash
+  brew install rclone
+  ```
 
-Ověření: `rclone version`
+Ověření:
+```
+rclone version
+```
 
 ## 5. Zašifruj konfiguraci rclone (povinné)
 rclone si ukládá klíče do konfiguračního souboru. **Ten musí být vždy zašifrovaný heslem**, a to ještě
@@ -73,11 +88,21 @@ rclone config encryption set
 Zadej silné heslo ke konfiguraci a ulož si ho do správce hesel. Od teď se na něj rclone zeptá při
 každém příkazu (`Enter configuration password`).
 
-Kontrola: `rclone config file` vypíše cestu k souboru. Soubor musí začínat řádkem
+Kontrola: následující příkaz vypíše cestu ke konfiguraci. Soubor musí začínat řádkem
 `# Encrypted rclone configuration File`.
+```
+rclone config file
+```
 
 ## 6. Nastav připojení
-Spusť `rclone config` a odpovídej takto (u výběru napiš text, ne číslo; čísla se mezi verzemi liší):
+Spusť:
+```
+rclone config
+```
+a odpovídej takto (u výběru napiš text, ne číslo; čísla se mezi verzemi liší). Endpoint ke zkopírování:
+```
+https://s3.cl4.du.cesnet.cz
+```
 
 | Otázka | Odpověď |
 |---|---|
@@ -151,7 +176,10 @@ $env:RCLONE_CONFIG_PASS = (New-Object PSCredential "x", $s).GetNetworkCredential
 .\muj_skript.ps1
 Remove-Item Env:\RCLONE_CONFIG_PASS
 ```
-Verzi zjistíš příkazem `$PSVersionTable.PSVersion`.
+Verzi zjistíš příkazem:
+```powershell
+$PSVersionTable.PSVersion
+```
 
 **Úlohy bez obsluhy** (cron, úlohy na clusteru), kde heslo nemá kdo zadat: ulož ho do souboru čitelného
 jen pro tebe a předej ho přes `RCLONE_PASSWORD_COMMAND`:

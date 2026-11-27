@@ -46,23 +46,38 @@ In Gatekeeper, the group page shows the **group ID (tenant)** and your **user ID
 - Send the administrator your **user ID** and tell them which projects you need access to.
 
 ## 4. Install rclone
-- **Windows** (PowerShell): `winget install -e --id Rclone.Rclone`, then open a new terminal
+- **Windows** (PowerShell), then open a new terminal:
+  ```powershell
+  winget install -e --id Rclone.Rclone
+  ```
 - **Linux** (with sudo):
   ```bash
   sudo -v ; curl https://rclone.org/install.sh | sudo bash
   ```
   The installation may take a few minutes (it updates the man page index). If it fails because `unzip`
-  is missing, run `sudo apt install unzip` first.
+  is missing, run this first:
+  ```bash
+  sudo apt install unzip
+  ```
 - **Linux** (without sudo, e.g. on a server or cluster; on ARM replace `amd64` with `arm64`):
   ```bash
   curl -O https://downloads.rclone.org/rclone-current-linux-amd64.zip
   python3 -m zipfile -e rclone-current-linux-amd64.zip .
   mkdir -p ~/.local/bin && cp rclone-*-linux-amd64/rclone ~/.local/bin/ && chmod +x ~/.local/bin/rclone
   ```
-  If the `rclone` command is not found, add `export PATH="$HOME/.local/bin:$PATH"` to your `~/.bashrc`.
-- **macOS:** `brew install rclone`
+  If the `rclone` command is not found, add `~/.local/bin` to your path:
+  ```bash
+  echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc && source ~/.bashrc
+  ```
+- **macOS:**
+  ```bash
+  brew install rclone
+  ```
 
-Check: `rclone version`
+Check:
+```
+rclone version
+```
 
 ## 5. Encrypt the rclone config (mandatory)
 rclone stores your keys in its config file. **The file must always be encrypted with a password**, and
@@ -73,12 +88,22 @@ rclone config encryption set
 Enter a strong config password and keep it in a password manager. From now on rclone asks for it with
 every command (`Enter configuration password`).
 
-Check: `rclone config file` prints the file path. The file must start with the line
+Check: the following command prints the config file path. The file must start with the line
 `# Encrypted rclone configuration File`.
+```
+rclone config file
+```
 
 ## 6. Set up the connection
-Run `rclone config` and answer as follows (for choices, type the text, not the number; numbers differ
-between versions):
+Run:
+```
+rclone config
+```
+and answer as follows (for choices, type the text, not the number; numbers differ between versions).
+Endpoint to copy:
+```
+https://s3.cl4.du.cesnet.cz
+```
 
 | Prompt | Answer |
 |---|---|
@@ -152,7 +177,10 @@ $env:RCLONE_CONFIG_PASS = (New-Object PSCredential "x", $s).GetNetworkCredential
 .\my_script.ps1
 Remove-Item Env:\RCLONE_CONFIG_PASS
 ```
-Check your version with `$PSVersionTable.PSVersion`.
+Check your version with:
+```powershell
+$PSVersionTable.PSVersion
+```
 
 **Unattended jobs** (cron, cluster jobs) where nobody can type the password: store it in a file readable
 only by you and pass it via `RCLONE_PASSWORD_COMMAND`:

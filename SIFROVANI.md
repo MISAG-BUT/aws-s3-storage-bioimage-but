@@ -17,7 +17,17 @@ Předpoklad: máš rclone nainstalovaný, konfiguraci zašifrovanou a nastavené
 - Šifruj vždy do podsložky `encrypted/` (např. `<projekt>/encrypted/`) a nemíchej do ní nešifrované soubory.
 
 ## 1. Vytvoř šifrovanou vrstvu
-Spusť `rclone config` a odpovídej takto:
+Spusť:
+```
+rclone config
+```
+a odpovídej podle tabulky. Hodnoty pro `remote>` ke zkopírování (nahraď `<projekt>` / `<uzivatel>`):
+```
+cesnet:bioimage-but/<projekt>/encrypted
+```
+```
+cesnet:private-<uzivatel>/encrypted
+```
 
 | Otázka | Odpověď |
 |---|---|

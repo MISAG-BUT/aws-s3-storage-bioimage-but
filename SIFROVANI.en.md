@@ -20,7 +20,17 @@ described in the [member guide](README.en.md).
   files into it.
 
 ## 1. Create the encryption layer
-Run `rclone config` and answer as follows:
+Run:
+```
+rclone config
+```
+and answer according to the table. Values for `remote>` to copy (replace `<project>` / `<user>`):
+```
+cesnet:bioimage-but/<project>/encrypted
+```
+```
+cesnet:private-<user>/encrypted
+```
 
 | Prompt | Answer |
 |---|---|
